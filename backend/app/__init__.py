@@ -1,0 +1,1 @@
+"""SecSBOM - Plataforma de priorizacion contextual y explicable de vulnerabilidades basada en SBOM."""

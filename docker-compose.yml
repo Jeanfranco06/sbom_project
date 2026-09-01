@@ -1,0 +1,16 @@
+services:
+  secsbom:
+    build: .
+    container_name: secsbom
+    ports:
+      - "8000:8000"
+    environment:
+      SECSBOM_MODE: hybrid
+      SECSBOM_BASE_DIR: /app
+    volumes:
+      - secsbom_data:/app/data
+      - ./examples:/app/examples:ro
+    restart: unless-stopped
+
+volumes:
+  secsbom_data:

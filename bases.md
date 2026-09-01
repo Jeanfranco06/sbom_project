@@ -1,0 +1,381 @@
+Especificaciones del Proyecto
+Plataforma de Priorización Contextual y Explicable de Vulnerabilidades Basada en SBOM para Proyectos de Software Académico
+Autor: JeanFrancisco
+Curso: Seguridad de la Información
+Fecha de elaboración: Septiembre 2026
+ 
+1. Resumen Ejecutivo
+Este documento especifica el diseño completo de un sistema de software cuyo objetivo es transformar el inventario técnico de una Software Bill of Materials (SBOM) en un ranking de remediación de vulnerabilidades contextual, explicable y comparativamente superior a una priorización basada exclusivamente en CVSS.
+El proyecto integra:
+•	Desarrollo de software (backend, análisis de dependencias, dashboard).
+•	Seguridad de la información (gestión de vulnerabilidades técnicas, gestión de riesgos, activos de información).
+•	Investigación aplicada (diseño experimental, corpus controlado, métricas de evaluación).
+El sistema funciona localmente, analiza proyectos propios o autorizados, y puede operar en modo offline mediante snapshots fechados de fuentes públicas de vulnerabilidades para garantizar reproducibilidad científica.
+ 
+2. Título del Proyecto
+Título principal:
+Diseño y evaluación de una plataforma basada en SBOM para la priorización contextual y explicable de vulnerabilidades en proyectos de software académico
+Título alternativo (versión con agente):
+Desarrollo y evaluación de un agente DevSecOps basado en SBOM para la priorización y remediación explicable de vulnerabilidades en proyectos de software académico
+ 
+3. Planteamiento del Problema
+3.1 Problema general
+Los proyectos de software académico emplean dependencias de terceros sin visibilidad completa de sus componentes directos y transitivos. Las herramientas convencionales de análisis de composición de software generan múltiples alertas de vulnerabilidades, pero la priorización basada únicamente en severidad técnica (CVSS) produce ruido, dificulta el triage y puede desviar la atención de riesgos realmente explotables o expuestos.
+3.2 Brecha de conocimiento
+En proyectos académicos y equipos con madurez DevSecOps limitada, se requiere una solución accesible que convierta una SBOM técnica en decisiones de remediación comprensibles, combinando severidad, probabilidad de explotación, evidencia de explotación activa, alcance de la dependencia, entorno de despliegue y contexto de uso.
+3.3 Pregunta general de investigación
+¿En qué medida una plataforma basada en SBOM y priorización contextual mejora la identificación de vulnerabilidades críticas y reduce la carga de triage en proyectos de software académico, en comparación con una priorización basada únicamente en CVSS?
+3.4 Preguntas específicas
+1.	¿Qué nivel de cobertura obtiene la plataforma al identificar dependencias directas y transitivas?
+2.	¿Qué tan precisa es la SBOM generada respecto de un inventario manual validado?
+3.	¿La priorización contextual reduce la cantidad de alertas clasificadas como urgentes frente a una ordenación solo por CVSS?
+4.	¿La plataforma coloca en los primeros lugares las vulnerabilidades consideradas prioritarias por expertos?
+5.	¿La explicación del riesgo reduce el tiempo requerido para elegir una acción de remediación?
+6.	¿Qué factores contextuales influyen más en la priorización: CVSS, KEV, EPSS, exposición, entorno, alcance o disponibilidad de actualización?
+ 
+4. Objetivos
+4.1 Objetivo general
+Desarrollar y evaluar una plataforma basada en SBOM para la priorización contextual y explicable de vulnerabilidades en dependencias de proyectos de software académico.
+4.2 Objetivos específicos
+•	Identificar componentes directos y transitivos de proyectos seleccionados mediante generación o ingestión de SBOM.
+•	Validar la completitud y exactitud de la SBOM frente a inventarios manuales de referencia.
+•	Correlacionar componentes de la SBOM con vulnerabilidades públicas asociadas.
+•	Diseñar un modelo de priorización que combine severidad, explotabilidad, exposición y contexto técnico.
+•	Integrar señales de CVSS, EPSS y CISA KEV dentro de la priorización.
+•	Identificar si una dependencia vulnerable es directa, transitoria, de desarrollo o de ejecución.
+•	Proponer acciones de remediación según versión segura, impacto de actualización y medidas compensatorias.
+•	Explicar de manera trazable las razones de cada nivel de prioridad.
+•	Comparar el modelo propuesto contra una priorización basada solo en CVSS.
+•	Evaluar usabilidad, utilidad y tiempo de triage con estudiantes desarrolladores, docentes o especialistas.
+ 
+5. Hipótesis
+H1 (principal): El enfoque híbrido y contextual presenta una calidad de ranking (Precision@k, Recall@k, NDCG@k) significativamente mayor que un ranking basado exclusivamente en CVSS.
+H2: Las alertas con explicación contextual reducen el tiempo de triage de los desarrolladores respecto a alertas tradicionales.
+H3: El modelo de priorización propuesto alcanza una concordancia aceptable (Kendall's tau o correlación de Spearman) con la clasificación de severidad realizada por expertos.
+H4: La plataforma identifica una mayor proporción de dependencias vulnerables directas y transitivas que un inventario manual básico.
+H0 (nula): No existen diferencias significativas entre el ranking basado en CVSS y el modelo contextual propuesto en cuanto a calidad de priorización.
+ 
+6. Relación con Seguridad de la Información
+Proceso de Seguridad de la Información	Función del software
+Identificación de activos	Detecta dependencias, componentes y versiones del sistema analizado
+Inventario de activos de información	Genera una SBOM estandarizada (CycloneDX/SPDX)
+Identificación de vulnerabilidades	Correlaciona componentes con CVEs mediante OSV/NVD
+Análisis de riesgo	Evalúa CVSS, EPSS, KEV, exposición, entorno y criticidad
+Gestión de riesgo	Prioriza y justifica el orden de tratamiento
+Tratamiento de riesgo	Recomienda actualizar, mitigar, sustituir o aceptar el riesgo documentadamente
+Gestión de proveedores / cadena de suministro	Trata las dependencias open source como parte de la cadena de suministro de software
+Auditoría y trazabilidad	Genera evidencia exportable (SBOM, reportes, justificaciones)
+Mejora continua	Permite reanálisis periódico y verificación de remediación
+
+Alineación normativa de referencia: ISO/IEC 27001:2022 Anexo A control 8.8 (Gestión de vulnerabilidades técnicas), NIST SSDF (SP 800-218), NIST CSF 2.0 (categoría GV.SC de gestión de riesgo de cadena de suministro), guías de SBOM de NTIA/CISA.
+ 
+7. Alcance del Proyecto
+7.1 Incluido en la versión inicial (MVP)
+•	Análisis de proyectos Python (fase 1); extensión opcional a .NET (fase 2).
+•	Lectura de requirements.txt, poetry.lock, Pipfile.lock.
+•	Generación de SBOM en formato CycloneDX JSON.
+•	Identificación de dependencias directas y transitivas (grafo de dependencias).
+•	Correlación con vulnerabilidades públicas (OSV como fuente principal).
+•	Enriquecimiento con CVSS, EPSS y CISA KEV.
+•	Perfil de contexto del proyecto definido manualmente por el usuario (entorno, exposición, criticidad de datos).
+•	Motor de priorización contextual con pesos configurables y reglas de excepción.
+•	Motor de explicabilidad: evidencia y justificación de cada alerta.
+•	Dashboard web local para visualizar hallazgos y ranking.
+•	Exportación de reportes (JSON/CSV/PDF).
+•	Modo offline mediante snapshots fechados de fuentes de vulnerabilidades.
+7.2 Excluido de la versión inicial
+•	Escaneo masivo de repositorios públicos de terceros sin autorización.
+•	Validación activa de credenciales o explotación de vulnerabilidades.
+•	Actualización automática de dependencias sin revisión humana.
+•	Ejecución de código del proyecto analizado.
+•	Soporte simultáneo para todos los ecosistemas (Node.js, Java, Go, etc.) en la primera versión.
+•	Generación de VEX automatizado (queda como trabajo futuro).
+•	Un LLM como única fuente de verdad para clasificar vulnerabilidades.
+ 
+8. Arquitectura del Sistema
+8.1 Diagrama de flujo general
+Repositorio o proyecto autorizado (local)
+              |
+              v
+   Analizador de dependencias
+   (requirements.txt / lockfiles)
+              |
+              v
+   Generador de SBOM (CycloneDX JSON)
+              |
+              v
+   Grafo de dependencias
+   (directas y transitivas)
+              |
+              v
+   Motor de correlación de vulnerabilidades
+   (OSV API / snapshot local)
+              |
+              v
+   Enriquecimiento de inteligencia de riesgo
+   - CVSS (severidad técnica)
+   - EPSS (probabilidad de explotación)
+   - CISA KEV (explotación activa conocida)
+   - Disponibilidad de parche
+              |
+              v
+   Perfil de contexto del proyecto
+   (entorno, exposición, criticidad, definido por el usuario)
+              |
+              v
+   Motor de priorización contextual
+   (pesos + reglas de excepción)
+              |
+              v
+   Motor de explicabilidad y remediación
+              |
+              v
+   Dashboard local + Reporte exportable
+
+8.2 Funcionamiento local vs. externo
+Elemento	Ubicación	Justificación
+Código fuente del proyecto analizado	Local	Nunca se sube a terceros; se procesa en la máquina del usuario
+SBOM generada	Local	Contiene información del proyecto, se almacena localmente
+Base de datos de resultados	Local (PostgreSQL o SQLite)	Persistencia de análisis históricos
+Snapshot de vulnerabilidades (OSV, KEV, EPSS)	Descarga puntual, uso local posterior	Permite modo offline y reproducibilidad
+Consulta en vivo a OSV/NVD (opcional)	Externa, solo metadatos de paquete/versión	Nunca se envía código fuente, solo nombre y versión del paquete
+Dashboard	Local (localhost)	No requiere despliegue en servidor institucional
+
+8.3 Modos de operación
+Modo	Descripción	Uso recomendado
+Conectado	Consulta APIs públicas en tiempo real durante el análisis	Uso cotidiano, demostraciones
+Híbrido	Descarga snapshots periódicos y los actualiza manualmente	Entornos con acceso restringido a Internet
+Offline (recomendado para el experimento)	Usa snapshots fechados y versionados de fuentes de vulnerabilidades	Garantiza reproducibilidad de los resultados del artículo
+
+ 
+9. Stack Tecnológico
+Capa	Tecnología	Justificación
+Backend / API	Python + FastAPI	Coincide con el perfil técnico del desarrollador; rápido para prototipos
+Análisis de dependencias	Python (parsers propios + librerías de lockfiles)	Control total sobre la extracción de datos
+Formato SBOM	CycloneDX (librería cyclonedx-python)	Estándar ampliamente adoptado en DevSecOps
+Grafo de dependencias	NetworkX	Modelado y visualización de relaciones directas/transitivas
+Base de datos	PostgreSQL	Persistencia robusta, coincide con stack habitual del desarrollador
+Frontend / Dashboard	React o Next.js	Interfaz moderna, filtros y visualización de ranking
+Contenedores	Docker	Reproducibilidad del entorno de análisis
+Fuente de vulnerabilidades	OSV API / snapshot JSON	Formato abierto, mapea vulnerabilidad-paquete-versión
+Fuente de explotación activa	CISA KEV (CSV/JSON descargable)	Indicador de explotación real
+Fuente de probabilidad de explotación	EPSS (descarga CSV de FIRST)	Estimación basada en datos, actualizada periódicamente
+Generación de reportes	ReportLab o WeasyPrint (offline)	Exportación de evidencia en PDF
+
+ 
+10. Modelo de Priorización
+10.1 Factores y pesos sugeridos (deben calibrarse)
+Factor	Fuente	Peso inicial sugerido
+Severidad técnica (CVSS)	NVD/OSV	20%
+Explotación activa (KEV)	CISA KEV	25%
+Probabilidad de explotación (EPSS)	FIRST EPSS	15%
+Exposición del componente	Perfil del proyecto	15%
+Entorno de despliegue	Perfil del proyecto	10%
+Alcance de la dependencia (directa/transitiva)	Grafo SBOM	5%
+Criticidad de los datos tratados	Perfil del proyecto	5%
+Disponibilidad de remediación	Metadata de versión	5%
+
+10.2 Fórmula de priorización
+P_v = 20*C + 25*K + 15*E + 15*X + 10*A + 5*D + 5*I + 5*R
+
+Donde:
+•	C = severidad CVSS normalizada (0-1)
+•	K = evidencia KEV (0 o 1)
+•	E = EPSS normalizado (0-1)
+•	X = exposición del componente (0-1)
+•	A = entorno o ambiente (0-1)
+•	D = tipo/profundidad de dependencia (0-1)
+•	I = criticidad de datos (0-1)
+•	R = remediabilidad (0-1)
+10.3 Reglas de excepción (complementan la fórmula)
+SI la CVE pertenece a CISA KEV
+Y el componente está expuesto en producción,
+ENTONCES prioridad = crítica, independientemente del CVSS.
+
+SI la dependencia se usa exclusivamente en desarrollo
+Y no está incluida en el artefacto desplegado,
+ENTONCES reducir prioridad, pero conservar la alerta.
+
+SI existe una actualización segura disponible
+Y no hay ruptura mayor de compatibilidad,
+ENTONCES recomendar actualización prioritaria.
+
+SI no existe parche,
+ENTONCES proponer mitigación compensatoria o sustitución.
+
+ 
+11. Diseño Metodológico de la Investigación
+11.1 Tipo de investigación
+•	Enfoque: cuantitativo, con evaluación cualitativa complementaria de usabilidad.
+•	Tipo: aplicada, tecnológica y experimental.
+•	Diseño: experimental comparativo sobre corpus controlado.
+11.2 Población
+Población principal: proyectos de software académico que empleen componentes de terceros en Python (y opcionalmente .NET), con archivos de manifiesto o bloqueo de dependencias que permitan generar una SBOM. Incluye las vulnerabilidades asociadas a los componentes identificados.
+Población secundaria: estudiantes de últimos ciclos de Ingeniería de Sistemas o carreras afines, y docentes/profesionales con conocimientos en desarrollo de software y seguridad informática, para la evaluación de usabilidad y utilidad.
+11.3 Muestra
+Nivel	Cantidad sugerida	Detalle
+Corpus de calibración	6 a 8 proyectos	Ajuste de pesos del modelo (no se usa en evaluación final)
+Corpus de prueba final	8 a 12 proyectos nuevos	Evaluación de métricas de ranking
+Total proyectos de laboratorio	14 a 20	Mezcla de escenarios: API pública, sistema interno, procesamiento batch
+Casos proyecto-componente-CVE	80 a 150	Unidad de análisis para métricas de ranking
+Participantes de usabilidad	20 a 30	Estudiantes desarrolladores
+Panel de validación de severidad	3 a 5	Docentes o profesionales con experiencia en seguridad
+
+11.4 Unidad de análisis
+Cada combinación proyecto + componente + versión + vulnerabilidad (CVE) identificada mediante la SBOM.
+11.5 Criterios de inclusión y exclusión
+Inclusión (proyectos):
+•	Proyectos propios, sintéticos o con autorización documentada.
+•	Desarrollados en Python (o .NET si se amplía el alcance).
+•	Con archivo de manifiesto o lockfile identificable.
+•	Con al menos una dependencia directa y una transitiva.
+•	Sin datos personales reales ni credenciales activas.
+Exclusión (proyectos):
+•	Repositorios sin autorización clara.
+•	Proyectos sin versiones de dependencias especificadas.
+•	Proyectos que dependan de infraestructura institucional real para reproducirse.
+Inclusión (participantes humanos):
+•	Mayores de edad, con conocimientos básicos de Git y dependencias.
+•	Aceptación de consentimiento informado.
+Exclusión (participantes humanos):
+•	Quienes no completen la actividad experimental.
+•	Quienes no acepten la política de tratamiento de datos.
+ 
+12. Corpus Experimental
+12.1 Estructura de cada proyecto de laboratorio
+•	Entre 5 y 20 archivos.
+•	Entre 0 y 10 vulnerabilidades sintéticas conocidas (usando versiones reales con CVEs públicas, pero en entorno aislado).
+•	Entre 5 y 15 casos negativos (dependencias sin vulnerabilidades relevantes para el escenario).
+•	Variedad de tipos: API pública simulada, sistema interno, procesamiento batch.
+•	Variedad de entornos: desarrollo, staging, producción simulada.
+•	Variedad de criticidad de datos: baja, media, alta.
+12.2 Ejemplo de ficha de caso etiquetado (verdad de terreno)
+{
+  "project_id": "api_academica_03",
+  "component": "componente-ejemplo",
+  "installed_version": "1.2.0",
+  "cve_id": "CVE-XXXX-YYYY",
+  "is_direct_dependency": false,
+  "environment": "production",
+  "internet_exposed": true,
+  "data_criticality": "high",
+  "patch_available": true,
+  "expected_priority": "critical",
+  "justification": "Explotación activa (KEV), API pública y datos académicos sensibles."
+}
+
+12.3 Validación de la verdad de terreno
+Un panel de 3 a 5 docentes o profesionales revisa una muestra representativa de casos y valida o ajusta la prioridad esperada, utilizando una rúbrica documentada que considere CVSS, KEV, EPSS, exposición, entorno, tipo de dependencia, criticidad y disponibilidad de parche.
+ 
+13. Métricas de Evaluación
+13.1 Métricas técnicas de SBOM
+Métrica	Descripción
+Cobertura SBOM	Componentes identificados frente al inventario manual de referencia
+Exactitud SBOM	Proporción de componentes/versiones correctamente identificados
+
+13.2 Métricas de correlación de vulnerabilidades
+Métrica	Fórmula	Qué demuestra
+Precisión	VP / (VP + FP)	Proporción de alertas correctas
+Recall	VP / (VP + FN)	Proporción de vulnerabilidades reales detectadas
+F1-score	2 · (Precisión · Recall) / (Precisión + Recall)	Balance general
+
+13.3 Métricas de calidad de ranking (núcleo de la evaluación)
+Métrica	Fórmula conceptual	Qué demuestra
+Precision@k	Vulnerabilidades relevantes en las primeras k / k	Calidad de las primeras alertas mostradas
+Recall@k	Vulnerabilidades relevantes en las primeras k / total relevantes	Cobertura de urgencias reales en el top k
+NDCG@k	DCG@k / IDCG@k	Calidad del orden completo del ranking
+Kendall's tau / Spearman	Correlación entre ranking del sistema y ranking de expertos	Concordancia con juicio experto
+
+13.4 Métricas de usabilidad y utilidad
+Métrica	Instrumento
+Tiempo de triage	Cronometraje por escenario
+Tasa de decisión correcta	Comparación con rúbrica de expertos
+Usabilidad	Escala SUS (System Usability Scale)
+Utilidad percibida	Cuestionario Likert
+Comprensión de la alerta	Preguntas de verificación post-tarea
+
+ 
+14. Diseño Experimental
+14.1 Condiciones de comparación
+Condición	Información mostrada	Propósito
+A - Baseline	CVE, paquete, versión, CVSS	Línea base tradicional
+B - SBOM básico	A + tipo de dependencia (directa/transitiva)	Aísla el aporte del alcance de dependencia
+C - Propuesta contextual	B + EPSS + KEV + exposición + entorno + criticidad + parche	Modelo principal
+D - Propuesta explicable	C + evidencia, justificación y recomendación de acción	Evalúa utilidad para la toma de decisiones
+
+14.2 Procedimiento
+1.	Ejecutar las cuatro condiciones sobre el mismo corpus de prueba (mismos proyectos, mismas vulnerabilidades).
+2.	Calcular métricas de ranking para cada condición.
+3.	Presentar escenarios de las condiciones A y D a participantes humanos (diseño intra-sujeto contrabalanceado o entre grupos).
+4.	Medir tiempo de triage, exactitud de decisión y usabilidad.
+5.	Analizar estadísticamente las diferencias entre condiciones.
+14.3 Análisis estadístico sugerido
+•	Prueba de normalidad: Shapiro-Wilk.
+•	Comparación de métricas de ranking entre condiciones: prueba de Wilcoxon (datos pareados) o t de Student si se cumplen supuestos.
+•	Correlación de rankings: Kendall's tau o Spearman.
+•	Tamaño del efecto: d de Cohen.
+•	Comparación de tiempos de triage entre condiciones A y D: prueba t pareada o Wilcoxon.
+ 
+15. Plan de Ejecución por Fases
+Fase 1: Delimitación y antecedentes (2-3 semanas)
+•	Revisión de literatura sobre SBOM, CVSS, EPSS, KEV, gestión de vulnerabilidades y DevSecOps.
+•	Definición del alcance (Python como ecosistema inicial).
+•	Diseño de la escala de prioridad y pesos iniciales.
+•	Elaboración de instrumentos de validación de expertos y consentimiento informado.
+Fase 2: Corpus controlado (2-3 semanas)
+•	Construcción de 14-20 proyectos de laboratorio.
+•	Definición de versiones vulnerables y corregidas.
+•	Etiquetado de verdad de terreno.
+•	Validación de etiquetas con panel de expertos.
+Fase 3: Desarrollo del núcleo técnico (4-6 semanas)
+•	Implementación del analizador de dependencias.
+•	Generación de SBOM en CycloneDX.
+•	Construcción del grafo de dependencias.
+•	Implementación de la correlación con OSV.
+•	Descarga y procesamiento de snapshots KEV y EPSS.
+•	Implementación del motor de priorización (baseline y propuesta).
+Fase 4: Explicabilidad y dashboard (2-3 semanas)
+•	Diseño de tarjetas de alerta explicables.
+•	Desarrollo del dashboard web local.
+•	Generación de reportes exportables.
+Fase 5: Experimentación (2-3 semanas)
+•	Ejecución de las cuatro condiciones sobre el corpus de prueba.
+•	Cálculo de métricas de ranking.
+•	Aplicación de pruebas de usabilidad con participantes.
+•	Recolección de datos de tiempo y decisión.
+Fase 6: Análisis y redacción (2-3 semanas)
+•	Análisis estadístico de resultados.
+•	Redacción de resultados, discusión y limitaciones.
+•	Documentación de amenazas a la validez.
+•	Preparación del artículo final.
+Duración estimada total: 14 a 21 semanas.
+ 
+16. Estructura Sugerida del Artículo
+1.	Introducción
+2.	Trabajos relacionados (SBOM, CVSS, EPSS, KEV, gestión de vulnerabilidades, priorización de riesgo)
+3.	Materiales y métodos (corpus, población, muestra, instrumentos)
+4.	Diseño del sistema (arquitectura, modelo de priorización, explicabilidad)
+5.	Diseño experimental (condiciones, métricas, procedimiento)
+6.	Resultados (tablas de métricas de ranking, usabilidad, tiempos)
+7.	Discusión (interpretación, comparación con literatura)
+8.	Amenazas a la validez y limitaciones
+9.	Conclusiones y trabajo futuro
+ 
+17. Riesgos y Controles Éticos
+Riesgo	Control
+Uso de vulnerabilidades reales	Usar versiones vulnerables conocidas en entornos aislados, nunca desplegadas en producción real
+Cambios en fuentes de datos externas	Usar snapshots fechados y versionados para garantizar reproducibilidad
+Sesgo en la verdad de terreno	Validar con panel de expertos independiente del desarrollador
+Sobreajuste del modelo al corpus propio	Separar corpus de calibración y corpus de prueba final
+Exposición de información sensible	No usar datos personales reales; todo el corpus debe ser sintético o autorizado
+Escaneo de repositorios sin autorización	Analizar únicamente proyectos propios, de laboratorio o con autorización documentada por escrito
+
+ 
+18. Contribuciones Declarables del Artículo
+1.	Un modelo de priorización contextual y explicable que integra CVSS, EPSS, CISA KEV, exposición, entorno, criticidad de datos, alcance de dependencia y remediabilidad.
+2.	Una plataforma reproducible basada en SBOM para proyectos Python (extensible a .NET).
+3.	Un corpus experimental de proyectos académicos con vulnerabilidades controladas y prioridades validadas por expertos.
+4.	Evidencia empírica comparativa (métricas de ranking, concordancia con expertos, tiempo de triage) frente a un enfoque basado exclusivamente en CVSS.
+ 
+19. Delimitación para Defender ante el Asesor
+"El estudio no intenta reemplazar herramientas comerciales de SCA como Snyk, Dependabot o Dependency-Track. Propone y evalúa un modelo de priorización contextual y explicable orientado a proyectos académicos con recursos limitados, validado mediante un corpus reproducible y métricas estándar de calidad de ranking."

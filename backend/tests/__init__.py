@@ -1,0 +1,1 @@
+"""Tests de la plataforma SecSBOM."""
