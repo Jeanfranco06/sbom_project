@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-12-directa-prod-expuesta-data-baja",
+    "description": "Caso 12: dependencia directa, produccion, expuesto, con parche, criticidad de datos BAJA. Objetivo: urllib3 2.0.4 / CVE-2023-43804.",
+    "environment": "production",
+    "internet_exposed": true,
+    "data_criticality": "low"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-v845-jxx5-vc9f",
+      "component": "urllib3",
+      "installed_version": "2.0.4",
+      "is_direct_dependency": true,
+      "environment": "production",
+      "internet_exposed": true,
+      "data_criticality": "low",
+      "patch_available": true,
+      "expected_priority": "medium",
+      "justification": "PENDIENTE DE CONSENSO DE EXPERTOS (Fase A.4). CVE-2023-43804 en servicio expuesto en produccion y con parche (2.0.6), pero los datos tratados son de baja criticidad: la fuga de cookies tendria impacto limitado. Etiqueta inicial medium, a ajustar por el panel (candidata a low)."
+    }
+  ],
+  "notes": "Caso espejo del 09 cambiando exposicion y criticidad para aislar el factor I (criticidad de datos). Senalado en el plan para revision explicita del panel."
+}

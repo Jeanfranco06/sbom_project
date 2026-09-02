@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-03-transitiva-prod-expuesta",
+    "description": "Caso 03: dependencia transitiva, produccion, expuesto, con parche (score sin regla dura). Objetivo: werkzeug 2.2.2 / CVE-2023-25577 (transitiva de corpus-webapp).",
+    "environment": "production",
+    "internet_exposed": true,
+    "data_criticality": "high"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-xg9f-g7g7-2323",
+      "component": "werkzeug",
+      "installed_version": "2.2.2",
+      "is_direct_dependency": false,
+      "environment": "production",
+      "internet_exposed": true,
+      "data_criticality": "high",
+      "patch_available": true,
+      "expected_priority": "high",
+      "justification": "CVE-2023-25577: DoS por consumo de recursos parseando multipart (CVSS 7.5) en servidor web expuesto a Internet en produccion. Aunque es transitiva, el componente procesa entradas externas y existe parche (2.2.3): remediacion inmediata."
+    }
+  ],
+  "notes": "werkzeug 2.2.2 reporta 18 vulnerabilidades en el snapshot; solo la objetivo esta etiquetada. La dependencia directa corpus-webapp es ficticia (sin hallazgos) para aislar la variable alcance=transitiva."
+}

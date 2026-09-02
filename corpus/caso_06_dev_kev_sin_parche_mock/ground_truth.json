@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-06-dev-kev-sin-parche",
+    "description": "Caso 06: dependencia is_dev=True, produccion, no expuesto, SIN parche (KEV vs Dev). Objetivo: MOCK-KEV-0002 / CVE-2026-99002 (sintetico).",
+    "environment": "production",
+    "internet_exposed": false,
+    "data_criticality": "medium"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "MOCK-KEV-0002",
+      "component": "corpus-devkit",
+      "installed_version": "2.0.0",
+      "is_direct_dependency": true,
+      "environment": "production",
+      "internet_exposed": false,
+      "data_criticality": "medium",
+      "patch_available": false,
+      "expected_priority": "medium",
+      "justification": "PENDIENTE DE CONSENSO DE EXPERTOS (Fase A.4). Entrada sintetica: CVE en CISA KEV sin parche pero en dependencia exclusivamente de desarrollo y proyecto no expuesto. Tension KEV (explotacion activa) vs alcance dev (fuera del artefacto): etiqueta inicial medium, a ajustar por el panel."
+    }
+  ],
+  "notes": "Caso gris senalado en el plan para revision explicita del panel (junto con el caso 12). Vulnerabilidad sintetica documentada en scripts/build_corpus_fixtures.py."
+}

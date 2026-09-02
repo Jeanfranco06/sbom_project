@@ -1,0 +1,6 @@
+# Caso 08: Dependencia directa, desarrollo, no expuesto, SIN parche (ruido/irrelevante)
+# Objetivo: ecdsa 0.18.0 -> CVE-2024-23342 (Minerva timing attack, sin parche, EPSS bajo)
+ecdsa==0.18.0
+# Casos negativos
+six==1.16.0
+typing-extensions==4.12.2

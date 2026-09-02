@@ -1,0 +1,6 @@
+# Caso 12: Dependencia directa, produccion, expuesto, con parche, criticidad de datos BAJA
+# Objetivo: urllib3 2.0.4 -> CVE-2023-43804 (fuga de cabecera Cookie, parche 2.0.6)
+urllib3==2.0.4
+# Casos negativos
+six==1.16.0
+zipp==3.19.2

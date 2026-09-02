@@ -1,0 +1,6 @@
+# Caso 10: Dependencia directa, produccion, expuesto, con parche (CVSS medio, EPSS alta)
+# Objetivo: paramiko 2.10.3 -> CVE-2023-48795 (Terrapin, CVSS 5.9 medio, EPSS~0.93, parche 3.4.0)
+paramiko==2.10.3
+# Casos negativos
+six==1.16.0
+colorama==0.4.6

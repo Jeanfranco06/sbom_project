@@ -1,0 +1,24 @@
+[[package]]
+name = "corpus-webapp"
+version = "1.0.0"
+category = "main"
+optional = false
+dependencies = { werkzeug = "*", six = "*", colorama = "*" }
+
+[[package]]
+name = "werkzeug"
+version = "2.2.2"
+category = "main"
+optional = false
+
+[[package]]
+name = "six"
+version = "1.16.0"
+category = "main"
+optional = false
+
+[[package]]
+name = "colorama"
+version = "0.4.6"
+category = "main"
+optional = false

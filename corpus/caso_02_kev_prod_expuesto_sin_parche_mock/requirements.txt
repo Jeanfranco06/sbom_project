@@ -1,0 +1,7 @@
+# Caso 02: Dependencia directa, produccion, expuesto, SIN parche (KEV dominante)
+# Objetivo: corpus-filexplorer 1.0.0 -> MOCK-KEV-0001 / CVE-2026-99001 (sintetico documentado)
+# Justificacion del mock: no existe en PyPI un CVE en CISA KEV sin parche disponible.
+corpus-filexplorer==1.0.0
+# Casos negativos
+six==1.16.0
+packaging==24.1

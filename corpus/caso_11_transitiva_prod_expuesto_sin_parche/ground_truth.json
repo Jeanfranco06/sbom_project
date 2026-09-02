@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-11-transitiva-prod-expuesta-sin-parche",
+    "description": "Caso 11: dependencia transitiva, produccion, expuesto, SIN parche (caso gris). Objetivo: ecdsa 0.18.0 / CVE-2024-23342 (transitiva de corpus-authclient).",
+    "environment": "production",
+    "internet_exposed": true,
+    "data_criticality": "high"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-wj6h-64fc-37mp",
+      "component": "ecdsa",
+      "installed_version": "0.18.0",
+      "is_direct_dependency": false,
+      "environment": "production",
+      "internet_exposed": true,
+      "data_criticality": "high",
+      "patch_available": false,
+      "expected_priority": "medium",
+      "justification": "PENDIENTE DE CONSENSO DE EXPERTOS (Fase A.4). CVE-2024-23342 (Minerva timing attack, CVSS 7.4) sin parche, transitiva, en produccion expuesta con datos sensibles. Tension: severidad alta y sin remediacion vs explotacion poco practica (canal lateral, EPSS~0.01) y alcance transitivo. Etiqueta inicial medium, a ajustar por el panel."
+    }
+  ],
+  "notes": "Caso gris deliberado: fuerza al panel a discutir el peso de 'sin parche' vs explotabilidad practica."
+}

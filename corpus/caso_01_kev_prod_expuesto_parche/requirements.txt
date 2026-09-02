@@ -1,0 +1,6 @@
+# Caso 01: Dependencia directa, produccion, expuesto, con parche (KEV + produccion)
+# Objetivo: pillow 10.0.0 -> CVE-2023-4863 (libwebp, en CISA KEV, EPSS~1.0, parche 10.0.1)
+pillow==10.0.0
+# Casos negativos (sin vulnerabilidades conocidas en el snapshot)
+six==1.16.0
+colorama==0.4.6

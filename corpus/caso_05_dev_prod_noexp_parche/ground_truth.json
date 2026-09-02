@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-05-dev-prod-noexp",
+    "description": "Caso 05: dependencia is_dev=True, produccion, no expuesto, con parche (regla de degradacion R2). Objetivo: black 23.1.0 / CVE-2024-21503.",
+    "environment": "production",
+    "internet_exposed": false,
+    "data_criticality": "medium"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-fj7x-q9j7-g6q6",
+      "component": "black",
+      "installed_version": "23.1.0",
+      "is_direct_dependency": true,
+      "environment": "production",
+      "internet_exposed": false,
+      "data_criticality": "medium",
+      "patch_available": true,
+      "expected_priority": "info",
+      "justification": "CVE-2024-21503 (ReDoS en el formateador black, CVSS 5.3) en dependencia exclusivamente de desarrollo: no forma parte del artefacto desplegado en produccion. Riesgo real despreciable; se conserva la alerta degradada (R2)."
+    }
+  ],
+  "notes": "black 23.1.0 tambien reporta PYSEC-2026-2120 (CVE-2026-31900, CVSS 9.8) en el snapshot: ruido no etiquetado util para medir como el baseline solo-CVSS dispara falsas urgencias en dependencias dev."
+}

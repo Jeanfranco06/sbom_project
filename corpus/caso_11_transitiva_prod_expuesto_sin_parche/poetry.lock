@@ -1,0 +1,24 @@
+[[package]]
+name = "corpus-authclient"
+version = "1.0.0"
+category = "main"
+optional = false
+dependencies = { ecdsa = "*", six = "*", platformdirs = "*" }
+
+[[package]]
+name = "ecdsa"
+version = "0.18.0"
+category = "main"
+optional = false
+
+[[package]]
+name = "six"
+version = "1.16.0"
+category = "main"
+optional = false
+
+[[package]]
+name = "platformdirs"
+version = "4.2.2"
+category = "main"
+optional = false

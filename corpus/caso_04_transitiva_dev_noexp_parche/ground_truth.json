@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-04-transitiva-dev-noexp",
+    "description": "Caso 04: dependencia transitiva, desarrollo, no expuesto, con parche (score degradado). Objetivo: werkzeug 2.2.2 / CVE-2023-25577.",
+    "environment": "development",
+    "internet_exposed": false,
+    "data_criticality": "medium"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-xg9f-g7g7-2323",
+      "component": "werkzeug",
+      "installed_version": "2.2.2",
+      "is_direct_dependency": false,
+      "environment": "development",
+      "internet_exposed": false,
+      "data_criticality": "medium",
+      "patch_available": true,
+      "expected_priority": "low",
+      "justification": "Misma CVE-2023-25577 del caso 03 pero en entorno de desarrollo interno y alcance transitivo: la exposicion real es minima. Se mantiene la alerta pero con prioridad baja; el baseline solo-CVSS la sobrerankinaria (7.5)."
+    }
+  ],
+  "notes": "Caso espejo del 03 para aislar el efecto de entorno+exposicion sobre la misma vulnerabilidad."
+}

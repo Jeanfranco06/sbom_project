@@ -1,0 +1,36 @@
+{
+  "project": {
+    "name": "corpus-caso-07-critico-staging-sin-parche",
+    "description": "Caso 07: dependencia directa, staging, expuesto, SIN parche (CVSS critico, sin KEV). Objetivo: pycrypto 2.6.1 / CVE-2013-7459.",
+    "environment": "staging",
+    "internet_exposed": true,
+    "data_criticality": "high"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-cq27-v7xp-c356",
+      "component": "pycrypto",
+      "installed_version": "2.6.1",
+      "is_direct_dependency": true,
+      "environment": "staging",
+      "internet_exposed": true,
+      "data_criticality": "high",
+      "patch_available": false,
+      "expected_priority": "high",
+      "justification": "CVE-2013-7459: desbordamiento de pila en pycrypto (CVSS 9.8 critico) con EPSS<0.1 y sin parche instalable: pycrypto esta abandonado y el commit de correccion nunca se publico como release en PyPI. En staging expuesto con datos sensibles exige sustitucion del componente, pero no es una emergencia activa (no KEV, EPSS bajo): high, no critical."
+    },
+    {
+      "vuln_id": "GHSA-6528-wvf6-f6qg",
+      "component": "pycrypto",
+      "installed_version": "2.6.1",
+      "is_direct_dependency": true,
+      "environment": "staging",
+      "internet_exposed": true,
+      "data_criticality": "high",
+      "patch_available": false,
+      "expected_priority": "medium",
+      "justification": "CVE-2018-6594: divulgacion de informacion en pycrypto (CVSS 7.5), sin parche (paquete abandonado), EPSS bajo. Mismo contexto que CVE-2013-7459 pero menor impacto: medium."
+    }
+  ],
+  "notes": "Nota de calidad de datos: OSV lista un evento 'fixed' con hash de commit git para CVE-2013-7459 (PYSEC-2017-94), por lo que el motor marca patch_available=True aunque no existe release instalable en PyPI. La verdad de terreno registra la realidad operativa (sin parche). Documentado como amenaza a la validez."
+}

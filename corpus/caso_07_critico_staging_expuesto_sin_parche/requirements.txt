@@ -1,0 +1,6 @@
+# Caso 07: Dependencia directa, staging, expuesto, SIN parche (CVSS critico, sin KEV)
+# Objetivo: pycrypto 2.6.1 -> CVE-2013-7459 (CVSS 9.8, EPSS<0.1, paquete abandonado, sin parche)
+pycrypto==2.6.1
+# Casos negativos
+six==1.16.0
+colorama==0.4.6

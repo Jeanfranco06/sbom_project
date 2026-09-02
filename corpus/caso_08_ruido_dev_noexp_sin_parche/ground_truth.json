@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-08-ruido-dev-noexp",
+    "description": "Caso 08: dependencia directa, desarrollo, no expuesto, SIN parche (ruido/irrelevante). Objetivo: ecdsa 0.18.0 / CVE-2024-23342.",
+    "environment": "development",
+    "internet_exposed": false,
+    "data_criticality": "low"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-wj6h-64fc-37mp",
+      "component": "ecdsa",
+      "installed_version": "0.18.0",
+      "is_direct_dependency": true,
+      "environment": "development",
+      "internet_exposed": false,
+      "data_criticality": "low",
+      "patch_available": false,
+      "expected_priority": "low",
+      "justification": "CVE-2024-23342 (Minerva timing attack, CVSS 7.4, sin parche, EPSS bajo) en entorno de desarrollo interno con datos de baja criticidad: ataque de canal lateral poco practico en este contexto. Ruido que el baseline solo-CVSS elevaria indebidamente."
+    }
+  ],
+  "notes": "Caso de ruido controlado: mide falsos positivos de priorizacion del baseline."
+}

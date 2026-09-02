@@ -1,0 +1,5 @@
+# Caso 09: Dependencia TRANSITIVA, produccion, no expuesto, con parche (exposicion vs entorno)
+# Objetivo: urllib3 2.0.4 (transitiva de corpus-webapp) -> CVE-2023-43804 (parche 2.0.6)
+corpus-webapp==1.0.0
+six==1.16.0
+colorama==0.4.6

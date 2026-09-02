@@ -1,0 +1,5 @@
+# Caso 11: Dependencia TRANSITIVA, produccion, expuesto, SIN parche (caso gris)
+# Objetivo: ecdsa 0.18.0 (transitiva de corpus-authclient) -> CVE-2024-23342 (sin parche)
+corpus-authclient==1.0.0
+six==1.16.0
+platformdirs==4.2.2

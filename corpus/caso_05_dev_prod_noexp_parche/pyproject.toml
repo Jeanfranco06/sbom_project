@@ -1,0 +1,13 @@
+# Caso 05: Dependencia is_dev=True, produccion, no expuesto, con parche (regla de degradacion R2)
+# Objetivo: black 23.1.0 (dev) -> CVE-2024-21503 (ReDoS, parche 24.3.0)
+[project]
+name = "corpus-caso-05"
+version = "0.1.0"
+description = "Caso 05 del corpus SecSBOM: dependencia de desarrollo con parche"
+dependencies = [
+    "packaging==24.1",
+    "six==1.16.0",
+]
+
+[tool.poetry.group.dev.dependencies]
+black = "23.1.0"

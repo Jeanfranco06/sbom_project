@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-09-transitiva-prod-noexp",
+    "description": "Caso 09: dependencia transitiva, produccion, no expuesto, con parche (exposicion vs entorno). Objetivo: urllib3 2.0.4 / CVE-2023-43804.",
+    "environment": "production",
+    "internet_exposed": false,
+    "data_criticality": "medium"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-v845-jxx5-vc9f",
+      "component": "urllib3",
+      "installed_version": "2.0.4",
+      "is_direct_dependency": false,
+      "environment": "production",
+      "internet_exposed": false,
+      "data_criticality": "medium",
+      "patch_available": true,
+      "expected_priority": "medium",
+      "justification": "CVE-2023-43804: la cabecera Cookie no se elimina en redirecciones de origen cruzado (impacto en confidencialidad), pero el servicio es interno, la dependencia es transitiva y existe parche (2.0.6): actualizar en el siguiente ciclo de mantenimiento."
+    }
+  ],
+  "notes": "urllib3 2.0.4 reporta 16 vulnerabilidades en el snapshot; solo la objetivo esta etiquetada. OSV contiene dos vectores CVSS divergentes para esta CVE (GHSA 5.9 vs PYSEC 8.1); el motor fusiona y usa el de GHSA: nota de calidad de datos."
+}

@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-01-kev-prod-expuesto",
+    "description": "Caso 01: dependencia directa, produccion, expuesto, con parche (KEV + produccion). Objetivo: pillow 10.0.0 / CVE-2023-4863 (libwebp).",
+    "environment": "production",
+    "internet_exposed": true,
+    "data_criticality": "high"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-j7hp-h8jx-5ppr",
+      "component": "pillow",
+      "installed_version": "10.0.0",
+      "is_direct_dependency": true,
+      "environment": "production",
+      "internet_exposed": true,
+      "data_criticality": "high",
+      "patch_available": true,
+      "expected_priority": "critical",
+      "justification": "CVE-2023-4863 (libwebp OOB write) en CISA KEV con explotacion activa, EPSS~1.0, API publica en produccion con datos sensibles. Parche disponible (10.0.1). Regla R1 aplica."
+    }
+  ],
+  "notes": "pillow 10.0.0 reporta 35 vulnerabilidades en el snapshot OSV 2026-09-02; solo la objetivo esta etiquetada. El resto son ruido no etiquetado (no relevante). PYSEC-2023-175 describe el mismo problema libwebp sin alias CVE ni CVSS: queda como hallazgo duplicado no etiquetado (nota de calidad de datos OSV)."
+}

@@ -1,0 +1,14 @@
+# Caso 06: Dependencia is_dev=True, produccion, no expuesto, SIN parche (KEV vs Dev)
+# Objetivo: corpus-devkit 2.0.0 (dev, sintetico) -> MOCK-KEV-0002 / CVE-2026-99002
+# Justificacion del mock: no existe en PyPI un CVE en CISA KEV sin parche disponible.
+[project]
+name = "corpus-caso-06"
+version = "0.1.0"
+description = "Caso 06 del corpus SecSBOM: KEV en dependencia de desarrollo (caso gris)"
+dependencies = [
+    "zipp==3.19.2",
+    "atomicwrites==1.4.1",
+]
+
+[tool.poetry.group.dev.dependencies]
+corpus-devkit = "2.0.0"

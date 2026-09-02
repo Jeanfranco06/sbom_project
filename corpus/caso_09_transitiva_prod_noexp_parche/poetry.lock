@@ -1,0 +1,24 @@
+[[package]]
+name = "corpus-webapp"
+version = "1.0.0"
+category = "main"
+optional = false
+dependencies = { urllib3 = "*", six = "*", colorama = "*" }
+
+[[package]]
+name = "urllib3"
+version = "2.0.4"
+category = "main"
+optional = false
+
+[[package]]
+name = "six"
+version = "1.16.0"
+category = "main"
+optional = false
+
+[[package]]
+name = "colorama"
+version = "0.4.6"
+category = "main"
+optional = false

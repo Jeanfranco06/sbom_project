@@ -1,0 +1,5 @@
+# Caso 03: Dependencia TRANSITIVA, produccion, expuesto, con parche (score sin regla dura)
+# Objetivo: werkzeug 2.2.2 (transitiva de corpus-webapp) -> CVE-2023-25577 (parche 2.2.3)
+corpus-webapp==1.0.0
+six==1.16.0
+colorama==0.4.6

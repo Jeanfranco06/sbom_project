@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-02-kev-sin-parche",
+    "description": "Caso 02: dependencia directa, produccion, expuesto, SIN parche (KEV dominante). Objetivo: MOCK-KEV-0001 / CVE-2026-99001 (sintetico).",
+    "environment": "production",
+    "internet_exposed": true,
+    "data_criticality": "high"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "MOCK-KEV-0001",
+      "component": "corpus-filexplorer",
+      "installed_version": "1.0.0",
+      "is_direct_dependency": true,
+      "environment": "production",
+      "internet_exposed": true,
+      "data_criticality": "high",
+      "patch_available": false,
+      "expected_priority": "critical",
+      "justification": "Entrada sintetica documentada (Fase A.1): no existe en PyPI un CVE en CISA KEV sin parche. KEV + expuesto en produccion => critica por regla R1, y al no haber parche exige mitigacion compensatoria (R4)."
+    }
+  ],
+  "notes": "Vulnerabilidad sintetica (mock) para el caso limite KEV-sin-parche. Sus entradas OSV/KEV/EPSS se generan deterministicamente en scripts/build_corpus_fixtures.py."
+}

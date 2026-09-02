@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-10-medio-alto-epss",
+    "description": "Caso 10: dependencia directa, produccion, expuesto, con parche (CVSS medio, EPSS alta). Objetivo: paramiko 2.10.3 / CVE-2023-48795 (Terrapin).",
+    "environment": "production",
+    "internet_exposed": true,
+    "data_criticality": "high"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-45x7-px36-x8w8",
+      "component": "paramiko",
+      "installed_version": "2.10.3",
+      "is_direct_dependency": true,
+      "environment": "production",
+      "internet_exposed": true,
+      "data_criticality": "high",
+      "patch_available": true,
+      "expected_priority": "high",
+      "justification": "CVE-2023-48795 (ataque Terrapin contra SSH): CVSS solo 5.9 (medio) pero EPSS~0.93 (probabilidad de explotacion altisima) en servicio SSH expuesto en produccion con datos sensibles. Parche disponible (3.4.0). El baseline solo-CVSS la subestimaria: high."
+    }
+  ],
+  "notes": "Caso clave para H1: demuestra que el factor EPSS eleva correctamente una vulnerabilidad de CVSS medio con explotacion muy probable."
+}

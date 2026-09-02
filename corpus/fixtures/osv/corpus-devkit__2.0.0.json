@@ -1,0 +1,42 @@
+{
+  "vulns": [
+    {
+      "id": "MOCK-KEV-0002",
+      "summary": "Divulgacion de informacion en corpus-devkit (entrada sintetica del corpus SecSBOM)",
+      "details": "Vulnerabilidad sintetica para el caso 06 del corpus SecSBOM: CVE en CISA KEV sin parche, pero en dependencia exclusivamente de desarrollo (is_dev=True) en proyecto de produccion no expuesto. No corresponde a un paquete real de PyPI.",
+      "aliases": [
+        "CVE-2026-99002"
+      ],
+      "modified": "2026-08-15T00:00:00Z",
+      "published": "2026-08-01T00:00:00Z",
+      "severity": [
+        {
+          "type": "CVSS_V3",
+          "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+        }
+      ],
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "PyPI",
+            "name": "corpus-devkit"
+          },
+          "ranges": [
+            {
+              "type": "ECOSYSTEM",
+              "events": [
+                {
+                  "introduced": "0"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "database_specific": {
+        "synthetic": true,
+        "corpus_case": "caso_06"
+      }
+    }
+  ]
+}
