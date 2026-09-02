@@ -62,6 +62,8 @@ class Analysis(Base):
     mode: Mapped[str] = mapped_column(String(32), default="connected")
     status: Mapped[str] = mapped_column(String(32), default="pending")  # pending|running|done|error
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    manifest_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    snapshot_metadata: Mapped[str] = mapped_column(Text, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     project: Mapped[Project] = relationship(back_populates="analyses")

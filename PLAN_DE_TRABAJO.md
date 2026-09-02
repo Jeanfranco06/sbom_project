@@ -43,23 +43,23 @@ Ningún desarrollo técnico adicional (UI, integraciones, nuevos lenguajes) debe
 ## FASE B: Implementación de Módulos de Medición Faltantes
 *Objetivo: Construir los instrumentos de software necesarios para extraer la evidencia cuantitativa (H1, H3 y H4).*
 
-- [ ] **B.1. Validación de Completitud y Exactitud de SBOM (H4)**
-  - [ ] Crear inventarios manuales de referencia (listas de dependencias exactas esperadas) para 3-5 proyectos del corpus.
-  - [ ] Desarrollar script/módulo (`sbom_validator.py`) que compare la salida CycloneDX de SecSBOM vs el inventario manual.
-  - [ ] Extraer métricas: Porcentaje de Cobertura y Porcentaje de Exactitud.
-- [ ] **B.2. Métrica de Concordancia con Expertos (H3)**
-  - [ ] Integrar cálculo de Coeficiente de Correlación de Spearman en `backend/app/services/statistics.py`.
-  - [ ] Integrar cálculo de Kendall's tau.
-  - [ ] (Opcional) Integrar Cohen's Kappa para categorización discreta.
-- [ ] **B.3. Trazabilidad de Reproducibilidad (Requisito Científico)**
-  - [ ] Modificar el modelo `Analysis` para almacenar el Hash SHA-256 del manifiesto escaneado.
-  - [ ] Registrar timestamps/versiones exactas de los snapshots locales de OSV/KEV/EPSS utilizados en cada corrida.
+- [x] **B.1. Validación de Completitud y Exactitud de SBOM (H4)**
+  - [x] Crear inventarios manuales de referencia (listas de dependencias exactas esperadas) para 3-5 proyectos del corpus.
+  - [x] Desarrollar script/módulo (`sbom_validator.py`) que compare la salida CycloneDX de SecSBOM vs el inventario manual.
+  - [x] Extraer métricas: Porcentaje de Cobertura y Porcentaje de Exactitud.
+- [x] **B.2. Métrica de Concordancia con Expertos (H3)**
+  - [x] Integrar cálculo de Coeficiente de Correlación de Spearman en `backend/app/services/statistics.py`.
+  - [x] Integrar cálculo de Kendall's tau.
+  - [x] (Opcional) Integrar Cohen's Kappa para categorización discreta.
+- [x] **B.3. Trazabilidad de Reproducibilidad (Requisito Científico)**
+  - [x] Modificar el modelo `Analysis` para almacenar el Hash SHA-256 del manifiesto escaneado.
+  - [x] Registrar timestamps/versiones exactas de los snapshots locales de OSV/KEV/EPSS utilizados en cada corrida.
 - [ ] **B.4. Primera Corrida de Evaluación Completa**
   - [ ] Ejecutar el análisis en modo *offline* sobre los 12 casos.
   - [ ] Exportar resultados consolidados: Precision@k, Recall@k, NDCG@k, y Concordancia de Expertos.
 
 ---
-
+##  A PARTIR DE AQUI TOMAR DESICIONES HUMANAS PARA VER SI SE IMPLEMENTA O NO
 ## FASE C: Extensión y Generalización a .NET
 *Objetivo: Demostrar que el modelo contextual es agnóstico al ecosistema (generalización de resultados).*
 

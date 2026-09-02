@@ -174,6 +174,7 @@ def metrics_for(
             "contextual_vs_expert_tau": kendall_tau(ranking_ctx, expert),
             "baseline_vs_expert_tau": kendall_tau(ranking_cvss, expert),
             "contextual_vs_expert_spearman": spearman_rho(ranking_ctx, expert),
+            "baseline_vs_expert_spearman": spearman_rho(ranking_cvss, expert),
         },
         "hypothesis_h1": {
             "ndcg_contextual_gt_baseline": ndcg_at_k(ranking_ctx, relevant, k) >= ndcg_at_k(ranking_cvss, relevant, k),

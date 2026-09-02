@@ -85,6 +85,8 @@ class AnalysisOut(BaseModel):
     mode: str
     status: str
     error: str | None
+    manifest_sha256: str | None = None
+    snapshot_metadata: str = "{}"
     created_at: datetime
 
 

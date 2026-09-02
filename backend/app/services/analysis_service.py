@@ -6,6 +6,9 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
+import hashlib
+from pathlib import Path
+
 from ..config import settings
 from ..models import Analysis, Dependency, DependencyEdge, Finding, Project, Setting
 from .dependency_analyzer import analyze_project_dir
@@ -20,6 +23,13 @@ def make_purl(name: str, version: str) -> str:
     base = f"pkg:pypi/{name.lower()}"
     return f"{base}@{version}" if version else base
 
+def _hash_manifest(project_path: str) -> str | None:
+    p = Path(project_path)
+    for name in ("poetry.lock", "Pipfile.lock", "requirements.txt", "pyproject.toml"):
+        f = p / name
+        if f.exists():
+            return hashlib.sha256(f.read_bytes()).hexdigest()
+    return None
 
 class AnalysisService:
     def __init__(self, db: Session) -> None:
@@ -49,6 +59,12 @@ class AnalysisService:
             project = self.db.get(Project, project_id)
             if project is None:
                 raise ValueError("Proyecto no encontrado")
+
+            analysis.manifest_sha256 = _hash_manifest(project.path)
+            
+            metadata = self.snapshots.active_snapshots()
+            metadata["mode"] = analysis.mode
+            analysis.snapshot_metadata = json.dumps(metadata)
 
             packages, raw_edges = analyze_project_dir(project.path)
             self._reset_project_dependencies(project)

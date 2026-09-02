@@ -112,14 +112,27 @@ def aggregate_experiment(runs: Iterable[dict], metric: str = "ndcg_at_k") -> dic
 
     for run in runs:
         metrics = run.get("metrics_snapshot") or {}
-        if run.get("condition") == "A":
-            baseline.append((metrics.get("baseline_cvss") or {}).get(metric, 0.0))
-            used += 1
-        elif run.get("condition") == "C":
-            contextual.append((metrics.get("contextual") or {}).get(metric, 0.0))
-            used += 1
+        
+        if metric in ("kendall_tau", "spearman_rho", "contextual_vs_expert_tau", "baseline_vs_expert_tau", "contextual_vs_expert_spearman", "baseline_vs_expert_spearman"):
+            concordance = metrics.get("concordance") or {}
+            if run.get("condition") == "A":
+                baseline_metric = metric.replace("contextual_", "baseline_") if "contextual_" in metric else metric
+                baseline.append(concordance.get(baseline_metric, 0.0))
+                used += 1
+            elif run.get("condition") == "C":
+                contextual.append(concordance.get(metric, 0.0))
+                used += 1
+            else:
+                skipped += 1
         else:
-            skipped += 1
+            if run.get("condition") == "A":
+                baseline.append((metrics.get("baseline_cvss") or {}).get(metric, 0.0))
+                used += 1
+            elif run.get("condition") == "C":
+                contextual.append((metrics.get("contextual") or {}).get(metric, 0.0))
+                used += 1
+            else:
+                skipped += 1
 
     return {
         "metric": metric,

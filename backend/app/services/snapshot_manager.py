@@ -35,6 +35,14 @@ class SnapshotManager:
         self.kev_dir.mkdir(parents=True, exist_ok=True)
         self.epss_dir.mkdir(parents=True, exist_ok=True)
 
+    def active_snapshots(self) -> dict[str, str | None]:
+        kev_files = sorted(self.kev_dir.glob("kev_*.json"))
+        epss_files = sorted(self.epss_dir.glob("epss_*.csv.gz"))
+        return {
+            "kev": kev_files[-1].name if kev_files else None,
+            "epss": epss_files[-1].name if epss_files else None,
+        }
+
     # ---------- CISA KEV ----------
     def download_kev(self) -> str:
         """Descarga el feed KEV de CISA y lo guarda con fecha de snapshot."""
