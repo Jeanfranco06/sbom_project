@@ -40,6 +40,10 @@ class Project(Base):
     path: Mapped[str] = mapped_column(String(1024))
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+    # Perfil de origen del codigo
+    source_type: Mapped[str] = mapped_column(String(32), default="local")  # local|git|upload
+    git_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+
     # Perfil de contexto definido por el usuario
     environment: Mapped[str] = mapped_column(String(32), default="production")  # production|staging|development
     internet_exposed: Mapped[bool] = mapped_column(Boolean, default=True)

@@ -12,7 +12,9 @@ CRITICALITIES = ["high", "medium", "low"]
 
 class ProjectCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255)
-    path: str
+    path: str | None = None
+    source_type: str = "local"
+    git_url: str | None = None
     description: str | None = None
     environment: str = "production"
     internet_exposed: bool = True
@@ -34,6 +36,8 @@ class ProjectOut(BaseModel):
     id: int
     name: str
     path: str
+    source_type: str
+    git_url: str | None
     description: str | None
     environment: str
     internet_exposed: bool

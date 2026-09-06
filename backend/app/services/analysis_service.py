@@ -63,6 +63,21 @@ class AnalysisService:
             if project is None:
                 raise ValueError("Proyecto no encontrado")
 
+            if project.source_type == "git" and project.git_url:
+                import subprocess
+                import shutil
+                repo_path = Path(project.path)
+                if repo_path.exists():
+                    shutil.rmtree(repo_path)
+                repo_path.parent.mkdir(parents=True, exist_ok=True)
+                try:
+                    subprocess.run(
+                        ["git", "clone", "--depth", "1", project.git_url, str(repo_path)],
+                        check=True, capture_output=True, text=True
+                    )
+                except subprocess.CalledProcessError as exc:
+                    raise DependencyAnalysisError(f"Error al clonar el repositorio Git: {exc.stderr}")
+
             analysis.manifest_sha256 = _hash_manifest(project.path)
             
             metadata = self.snapshots.active_snapshots()

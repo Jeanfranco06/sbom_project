@@ -301,76 +301,170 @@ def _resolve_depths(packages: list[ResolvedPackage]) -> tuple[list[ResolvedPacka
     return packages, edges
 
 
+def parse_composer_lock(path: Path) -> list[ResolvedPackage]:
+    """Parsea composer.lock de PHP."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8", errors="ignore"))
+    except json.JSONDecodeError:
+        return []
+
+    packages_dict: dict[str, ResolvedPackage] = {}
+    
+    # dependencies in composer.lock are found in "packages" and "packages-dev"
+    for category_key, is_dev in [("packages", False), ("packages-dev", True)]:
+        if category_key in data:
+            for pkg in data[category_key]:
+                if not isinstance(pkg, dict):
+                    continue
+                name = pkg.get("name", "")
+                if not name:
+                    continue
+                version = pkg.get("version", "").lstrip("v")
+                deps = list(pkg.get("require", {}).keys())
+                
+                packages_dict[name] = ResolvedPackage(
+                    name=name, version=version, is_direct=True, is_dev=is_dev, # Direct cannot easily be determined without composer.json
+                    category="dev" if is_dev else "main", source=str(path.name),
+                    ecosystem="Packagist", dependencies=deps
+                )
+
+    return list(packages_dict.values())
+
+
+def parse_package_lock_json(path: Path) -> list[ResolvedPackage]:
+    """Parsea package-lock.json de npm."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8", errors="ignore"))
+    except json.JSONDecodeError:
+        return []
+
+    packages_dict: dict[str, ResolvedPackage] = {}
+    
+    if "packages" in data:
+        for pkg_path, meta in data["packages"].items():
+            if not pkg_path or not isinstance(meta, dict):
+                continue
+                
+            name = pkg_path.split("node_modules/")[-1]
+            version = meta.get("version", "")
+            is_dev = meta.get("dev", False)
+            deps = list(meta.get("dependencies", {}).keys())
+            
+            root_meta = data["packages"].get("")
+            is_direct = False
+            if root_meta:
+                root_deps = list(root_meta.get("dependencies", {}).keys()) + list(root_meta.get("devDependencies", {}).keys())
+                if name in root_deps:
+                    is_direct = True
+
+            packages_dict[name] = ResolvedPackage(
+                name=name, version=version, is_direct=is_direct, is_dev=is_dev,
+                category="dev" if is_dev else "main", source=str(path.name),
+                ecosystem="npm", dependencies=deps
+            )
+    elif "dependencies" in data:
+        for name, meta in data["dependencies"].items():
+            if not isinstance(meta, dict):
+                continue
+            version = meta.get("version", "")
+            is_dev = meta.get("dev", False)
+            deps = list(meta.get("requires", {}).keys())
+            packages_dict[name] = ResolvedPackage(
+                name=name, version=version, is_direct=True, is_dev=is_dev,
+                category="dev" if is_dev else "main", source=str(path.name),
+                ecosystem="npm", dependencies=deps
+            )
+
+    return list(packages_dict.values())
+
+
 def analyze_project_dir(project_path: str) -> tuple[list[ResolvedPackage], list[tuple[str, str]]]:
-    """Analiza un directorio y devuelve (paquetes resueltos, aristas del grafo)."""
+    """Analiza un directorio de forma recursiva y devuelve (paquetes resueltos, aristas del grafo)."""
     root = Path(project_path)
     if not root.exists() or not root.is_dir():
         raise DependencyAnalysisError(f"El directorio del proyecto no existe: {project_path}")
 
     direct_only: list[ResolvedPackage] = []
+    lock_packages: list[ResolvedPackage] = []
+    manifest_found = False
 
-    req_file = root / "requirements.txt"
-    if req_file.exists():
-        direct_only.extend(parse_requirements(req_file.read_text(encoding="utf-8").splitlines()))
+    def skip(p: Path) -> bool:
+        return "node_modules" in p.parts or ".venv" in p.parts or "venv" in p.parts
 
-    pyproject = root / "pyproject.toml"
-    if pyproject.exists():
-        direct_only.extend(parse_pyproject(pyproject.read_bytes()))
+    # 1. Dependencias directas (requirements.txt, pyproject.toml, Pipfile, .csproj)
+    for req_file in root.rglob("requirements.txt"):
+        if skip(req_file): continue
+        manifest_found = True
+        direct_only.extend(parse_requirements(req_file.read_text(encoding="utf-8", errors="ignore").splitlines()))
 
-    pipfile = root / "Pipfile"
-    pipfile_default: set[str] = set()
-    if pipfile.exists():
+    for pyproject in root.rglob("pyproject.toml"):
+        if skip(pyproject): continue
+        manifest_found = True
+        direct_only.extend(parse_pyproject(pyproject.read_bytes(), source_name=pyproject.name))
+
+    for pipfile in root.rglob("Pipfile"):
+        if skip(pipfile): continue
+        manifest_found = True
         try:
-            doc = tomllib.loads(pipfile.read_text(encoding="utf-8"))
-        except (TypeError, ValueError):
-            doc = {}
-        if tomllib is not None:
+            doc = tomllib.loads(pipfile.read_text(encoding="utf-8", errors="ignore"))
             for kind in ("packages", "dev-packages"):
                 is_dev = kind == "dev-packages"
                 for name in (doc.get(kind, {}) or {}).keys():
                     n = normalize_name(name)
-                    direct_only.append(ResolvedPackage(name=n, version="", is_direct=True, is_dev=is_dev, category="dev" if is_dev else "main", source="Pipfile"))
+                    direct_only.append(ResolvedPackage(name=n, version="", is_direct=True, is_dev=is_dev, category="dev" if is_dev else "main", source=pipfile.name))
+        except Exception:
+            pass
 
-    # Buscar .csproj para dependencias directas en .NET
-    for csproj_file in root.glob("*.csproj"):
+    for csproj_file in root.rglob("*.csproj"):
+        if skip(csproj_file): continue
+        manifest_found = True
         direct_only.extend(parse_csproj(csproj_file.read_bytes(), source_name=csproj_file.name))
+
+    # 2. Lockfiles (poetry.lock, Pipfile.lock, packages.lock.json, package-lock.json)
     direct_names = {normalize_name(p.name) for p in direct_only}
 
-    # Resolucion completa desde lockfiles
-    poetry_lock = root / "poetry.lock"
-    pipfile_lock = root / "Pipfile.lock"
-    nuget_lock = root / "packages.lock.json"
-    
-    if poetry_lock.exists():
-        packages = parse_poetry_lock(poetry_lock, direct_names)
-        source = "poetry.lock"
-    elif pipfile_lock.exists():
-        packages = parse_pipfile_lock(pipfile_lock, direct_names)
-        source = "Pipfile.lock"
-    elif nuget_lock.exists():
-        packages = parse_packages_lock_json(nuget_lock)
-        source = "packages.lock.json"
-    elif direct_only:
-        packages = direct_only
-        source = "manifest"
-    else:
+    for lock in root.rglob("poetry.lock"):
+        if skip(lock): continue
+        manifest_found = True
+        lock_packages.extend(parse_poetry_lock(lock, direct_names))
+
+    for lock in root.rglob("Pipfile.lock"):
+        if skip(lock): continue
+        manifest_found = True
+        lock_packages.extend(parse_pipfile_lock(lock, direct_names))
+
+    for lock in root.rglob("packages.lock.json"):
+        if skip(lock): continue
+        manifest_found = True
+        lock_packages.extend(parse_packages_lock_json(lock))
+
+    for lock in root.rglob("package-lock.json"):
+        if skip(lock): continue
+        manifest_found = True
+        lock_packages.extend(parse_package_lock_json(lock))
+
+    for lock in root.rglob("composer.lock"):
+        if skip(lock): continue
+        manifest_found = True
+        lock_packages.extend(parse_composer_lock(lock))
+
+    if not manifest_found:
         raise DependencyAnalysisError(
             "No se encontraron archivos de dependencias en el proyecto "
-            "(requirements.txt, pyproject.toml, poetry.lock, Pipfile.lock o .csproj/packages.lock.json)."
+            "(requirements.txt, pyproject.toml, poetry.lock, Pipfile.lock, package-lock.json, etc.)."
         )
 
-    # Sincronizar versiones de directas con la resolucion del lockfile
-    if source != "manifest":
-        by_name = {p.name: p for p in packages}
-        for d in direct_only:
-            resolved = by_name.get(d.name)
-            if resolved:
-                resolved.is_direct = True
-                if d.is_dev:
-                    resolved.is_dev = True
-                    resolved.category = "dev"
+    # 3. Combinar paquetes
+    by_name = {p.name: p for p in lock_packages}
+    for d in direct_only:
+        resolved = by_name.get(d.name)
+        if resolved:
+            resolved.is_direct = True
+            if d.is_dev:
+                resolved.is_dev = True
+                resolved.category = "dev"
+        else:
+            lock_packages.append(d)
 
-    packages, edges = _resolve_depths(packages)
-
-    # Si venimos solo de requirements.txt sin versiones, intentar resolver versiones de manifest directo
+    packages, edges = _resolve_depths(lock_packages)
     return packages, edges
