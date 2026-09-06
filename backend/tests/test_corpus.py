@@ -23,7 +23,7 @@ FIXTURES_DIR = CORPUS_DIR / "fixtures"
 
 VALID_ENV = {"production", "staging", "development"}
 VALID_CRIT = {"high", "medium", "low"}
-N_CASES = 12
+N_CASES = 16
 
 
 def _case_dirs() -> list[Path]:

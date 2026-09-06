@@ -28,16 +28,7 @@ function esc(str) {
 /* ---------- Navegacion ---------- */
 document.querySelectorAll(".nav-item").forEach((btn) => {
   btn.addEventListener("click", () => {
-document.querySelectorAll(".nav-item").forEach((b) => b.classList.remove("active"));
-
-/* ---------- Init ---------- */
-(async function init() {
-  try {
-    st = await api("/api/snapshots/status");
-    $("#mode-badge").textContent = "modo: " + st.mode;
-  } catch {}
-  loadProjects();
-})();
+    document.querySelectorAll(".nav-item").forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
     document.querySelectorAll(".view").forEach(hide);
     show($("#view-" + btn.dataset.view));
@@ -47,6 +38,26 @@ document.querySelectorAll(".nav-item").forEach((b) => b.classList.remove("active
     if (btn.dataset.view === "experiments") loadExperiments();
   });
 });
+
+/* ---------- Init ---------- */
+(async function init() {
+  // Mostrar solo la vista proyectos al inicio
+  document.querySelectorAll(".view").forEach(hide);
+  show($("#view-projects"));
+  loadProjects();
+  // Cargar modo
+  try {
+    const st = await api("/api/snapshots/status");
+    $("#mode-badge").textContent = "modo: " + st.mode;
+  } catch {}
+})();
+
+
+
+async function openProjectById(id) {
+  const project = await api("/api/projects/" + id);
+  openProject(project);
+}
 
 /* ---------- Proyectos ---------- */
 async function loadProjects() {
@@ -79,7 +90,26 @@ async function loadProjects() {
   }
 }
 
-$("#btn-new-project").addEventListener("click", () => show($("#modal-projects")));
+function updateSourceFields(value) {
+  // Si no se pasa valor, leerlo del radio seleccionado
+  if (value === undefined) {
+    const checked = document.querySelector('#form-project input[name="source_type"]:checked');
+    if (!checked) return;
+    value = checked.value;
+  }
+  document.getElementById("source-local").classList.add("hidden");
+  document.getElementById("source-git").classList.add("hidden");
+  document.getElementById("source-upload").classList.add("hidden");
+  document.getElementById("source-" + value).classList.remove("hidden");
+}
+
+$("#btn-new-project").addEventListener("click", () => {
+  $("#form-project").reset();
+  // Forzar "local" al abrir el modal (valor por defecto del HTML)
+  updateSourceFields("local");
+  show($("#modal-projects"));
+});
+
 document.querySelectorAll(".modal-close").forEach((b) =>
   b.addEventListener("click", () => {
     document.querySelectorAll(".modal").forEach(hide);
@@ -88,10 +118,25 @@ document.querySelectorAll(".modal-close").forEach((b) =>
 
 $("#form-project").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const data = Object.fromEntries(new FormData(e.target));
-  data.internet_exposed = e.target.internet_exposed.checked;
+  const formData = new FormData(e.target);
+  const sourceType = formData.get("source_type");
+  
   try {
-    await api("/api/projects", { method: "POST", body: JSON.stringify(data) });
+    if (sourceType === "upload") {
+      const resp = await fetch("/api/projects/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!resp.ok) {
+        let detail = resp.statusText;
+        try { detail = (await resp.json()).detail || detail; } catch {}
+        throw new Error(detail);
+      }
+    } else {
+      const data = Object.fromEntries(formData);
+      data.internet_exposed = e.target.internet_exposed.checked;
+      await api("/api/projects", { method: "POST", body: JSON.stringify(data) });
+    }
     hide($("#modal-projects"));
     e.target.reset();
     loadProjects();
@@ -246,8 +291,12 @@ function renderFinding(f) {
   return row;
 }
 
-$("#findings-list").addEventListener("change", () => { if (state.current) loadFindings(); });
-$("#findings-list").addEventListener("input", () => { if (state.current) loadFindings(); });
+["#filter-priority", "#filter-kev", "#filter-direct"].forEach(sel => {
+  const el = $(sel);
+  if (el) el.addEventListener("change", () => { if (state.current) loadFindings(); });
+});
+const filterQ = $("#filter-q");
+if (filterQ) filterQ.addEventListener("input", () => { if (state.current) loadFindings(); });
 
 /* ---------- SBOM ---------- */
 $("#btn-sbom").addEventListener("click", async () => {
@@ -675,7 +724,7 @@ function renderWilcoxon(s) {
 document.querySelectorAll(".nav-item").forEach((b) => b.classList.remove("active"));
 (async function init() {
   try {
-    st = await api("/api/snapshots/status");
+    const st = await api("/api/snapshots/status");
     $("#mode-badge").textContent = "modo: " + st.mode;
   } catch {}
   loadProjects();

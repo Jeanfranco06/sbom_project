@@ -14,13 +14,13 @@
         "CGA-3vv3-3897-wc6m"
       ],
       "database_specific": {
-        "cwe_ids": [
-          "CWE-409"
-        ],
         "github_reviewed_at": "2025-12-05T18:15:54Z",
         "github_reviewed": true,
         "nvd_published_at": "2025-12-05T17:16:04Z",
-        "severity": "HIGH"
+        "severity": "HIGH",
+        "cwe_ids": [
+          "CWE-409"
+        ]
       },
       "references": [
         {
@@ -187,13 +187,13 @@
         "CGA-8p56-2w27-7ccq"
       ],
       "database_specific": {
-        "github_reviewed": true,
-        "nvd_published_at": "2024-06-17T20:15:13Z",
-        "severity": "MODERATE",
         "cwe_ids": [
           "CWE-669"
         ],
-        "github_reviewed_at": "2024-06-17T21:37:20Z"
+        "github_reviewed_at": "2024-06-17T21:37:20Z",
+        "github_reviewed": true,
+        "nvd_published_at": "2024-06-17T20:15:13Z",
+        "severity": "MODERATE"
       },
       "references": [
         {
@@ -771,13 +771,13 @@
         "CGA-w59h-375r-3v44"
       ],
       "database_specific": {
+        "github_reviewed": true,
         "nvd_published_at": "2025-12-05T16:15:51Z",
         "severity": "HIGH",
         "cwe_ids": [
           "CWE-770"
         ],
-        "github_reviewed_at": "2025-12-05T18:15:19Z",
-        "github_reviewed": true
+        "github_reviewed_at": "2025-12-05T18:15:19Z"
       },
       "references": [
         {
@@ -1221,13 +1221,13 @@
         "CGA-vgg3-gvpc-fvqw"
       ],
       "database_specific": {
-        "severity": "HIGH",
         "cwe_ids": [
           "CWE-200"
         ],
         "github_reviewed_at": "2023-10-02T23:27:05Z",
         "github_reviewed": true,
-        "nvd_published_at": "2023-10-04T17:15:10Z"
+        "nvd_published_at": "2023-10-04T17:15:10Z",
+        "severity": "HIGH"
       },
       "references": [
         {

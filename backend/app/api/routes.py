@@ -4,8 +4,9 @@ from __future__ import annotations
 import json
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFile, File, Form
 from sqlalchemy.orm import Session, selectinload
+import shutil
 
 from ..config import settings
 from ..database import get_db
@@ -56,8 +57,90 @@ def create_project(payload: ProjectCreate, db: DbDep):
     exists = db.query(Project).filter_by(name=payload.name).first()
     if exists:
         raise HTTPException(status_code=409, detail="Ya existe un proyecto con ese nombre")
-    project = Project(**payload.model_dump())
+    
+    dump = payload.model_dump(exclude_unset=True)
+    
+    if payload.source_type == "git" and not payload.git_url:
+        if payload.path and payload.path.startswith("http"):
+            payload.git_url = payload.path
+            dump["git_url"] = payload.path
+        else:
+            raise HTTPException(status_code=422, detail="Se requiere una URL de Git. Verifica haber pegado el enlace en el campo visible tras seleccionar 'Repositorio Git'.")
+    if payload.source_type == "local" and not payload.path:
+        raise HTTPException(status_code=422, detail="Se requiere una ruta local")
+        
+    if dump.get("source_type") in ("git", "upload") and "path" not in dump:
+        dump["path"] = "pending"
+    if dump.get("source_type") in ("git", "upload") and not dump.get("path"):
+        dump["path"] = "pending"
+        
+    project = Project(**dump)
     db.add(project)
+    db.commit()
+    db.refresh(project)
+    
+    if project.source_type == "git":
+        project.path = str(settings.data_dir / "repos" / str(project.id))
+        db.commit()
+        db.refresh(project)
+        
+    return project
+
+@router.post("/projects/upload", response_model=ProjectOut, status_code=201)
+def upload_project(
+    db: DbDep,
+    name: str = Form(...),
+    description: Optional[str] = Form(None),
+    environment: str = Form("production"),
+    internet_exposed: bool = Form(True),
+    data_criticality: str = Form("medium"),
+    file: UploadFile = File(...)
+):
+    if environment not in ("production", "staging", "development"):
+        raise HTTPException(status_code=422, detail="environment invalido")
+    if data_criticality not in ("high", "medium", "low"):
+        raise HTTPException(status_code=422, detail="data_criticality invalido")
+    exists = db.query(Project).filter_by(name=name).first()
+    if exists:
+        raise HTTPException(status_code=409, detail="Ya existe un proyecto con ese nombre")
+        
+    project = Project(
+        name=name,
+        path="pending",
+        source_type="upload",
+        description=description,
+        environment=environment,
+        internet_exposed=internet_exposed,
+        data_criticality=data_criticality,
+    )
+    db.add(project)
+    db.commit()
+    db.refresh(project)
+    
+    upload_dir = settings.data_dir / "uploads" / str(project.id)
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    file_path = upload_dir / file.filename
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    import zipfile
+    import tarfile
+    
+    if file.filename.endswith(".zip"):
+        with zipfile.ZipFile(file_path, "r") as zip_ref:
+            zip_ref.extractall(upload_dir)
+    elif file.filename.endswith((".tar.gz", ".tgz")):
+        with tarfile.open(file_path, "r:gz") as tar_ref:
+            tar_ref.extractall(upload_dir)
+            
+    project.path = str(upload_dir)
+    
+    # If it was an archive, check if we need to adjust the path to a single top-level directory
+    if file.filename.endswith((".zip", ".tar.gz", ".tgz")):
+        items = [p for p in upload_dir.iterdir() if p != file_path]
+        if len(items) == 1 and items[0].is_dir():
+            project.path = str(items[0])
+            
     db.commit()
     db.refresh(project)
     return project

@@ -1,0 +1,18 @@
+{
+  "project": {
+    "name": "caso_15",
+    "environment": "development",
+    "internet_exposed": false,
+    "data_criticality": "low"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-5crp-9r3c-p9vr",
+      "component": "Newtonsoft.Json",
+      "installed_version": "12.0.3",
+      "is_direct_dependency": true,
+      "patch_available": true,
+      "expected_priority": "low"
+    }
+  ]
+}

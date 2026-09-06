@@ -69,7 +69,7 @@ class Settings:
     no_patch_remediation_value: float = 0.4  # valor R cuando no hay parche disponible
 
     def ensure_dirs(self) -> None:
-        for sub in ("snapshots", "cache/osv", "cache/nvd", "db"):
+        for sub in ("snapshots", "cache/osv", "cache/nvd", "db", "uploads", "repos"):
             (self.data_dir / sub).mkdir(parents=True, exist_ok=True)
 
 

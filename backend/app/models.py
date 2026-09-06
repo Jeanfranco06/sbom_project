@@ -40,6 +40,10 @@ class Project(Base):
     path: Mapped[str] = mapped_column(String(1024))
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+    # Perfil de origen del codigo
+    source_type: Mapped[str] = mapped_column(String(32), default="local")  # local|git|upload
+    git_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+
     # Perfil de contexto definido por el usuario
     environment: Mapped[str] = mapped_column(String(32), default="production")  # production|staging|development
     internet_exposed: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -89,6 +93,7 @@ class Dependency(Base):
     requirement_type: Mapped[str] = mapped_column(String(16), default="prod")  # prod|dev
     # Origen: requirements.txt | poetry.lock | Pipfile.lock
     source: Mapped[str] = mapped_column(String(64), default="manifest")
+    ecosystem: Mapped[str] = mapped_column(String(32), default="PyPI")
 
     project: Mapped[Project] = relationship(back_populates="dependencies")
     findings: Mapped[list["Finding"]] = relationship(back_populates="dependency", cascade="all, delete-orphan")

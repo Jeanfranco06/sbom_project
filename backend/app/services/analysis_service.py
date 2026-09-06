@@ -19,8 +19,11 @@ from .snapshot_manager import SnapshotManager
 from .vulnerability_correlator import VulnerabilityCorrelator
 
 
-def make_purl(name: str, version: str) -> str:
-    base = f"pkg:pypi/{name.lower()}"
+def make_purl(name: str, version: str, ecosystem: str = "PyPI") -> str:
+    if ecosystem.lower() == "nuget":
+        base = f"pkg:nuget/{name}"
+    else:
+        base = f"pkg:pypi/{name.lower()}"
     return f"{base}@{version}" if version else base
 
 def _hash_manifest(project_path: str) -> str | None:
@@ -60,6 +63,21 @@ class AnalysisService:
             if project is None:
                 raise ValueError("Proyecto no encontrado")
 
+            if project.source_type == "git" and project.git_url:
+                import subprocess
+                import shutil
+                repo_path = Path(project.path)
+                if repo_path.exists():
+                    shutil.rmtree(repo_path)
+                repo_path.parent.mkdir(parents=True, exist_ok=True)
+                try:
+                    subprocess.run(
+                        ["git", "clone", "--depth", "1", project.git_url, str(repo_path)],
+                        check=True, capture_output=True, text=True
+                    )
+                except subprocess.CalledProcessError as exc:
+                    raise DependencyAnalysisError(f"Error al clonar el repositorio Git: {exc.stderr}")
+
             analysis.manifest_sha256 = _hash_manifest(project.path)
             
             metadata = self.snapshots.active_snapshots()
@@ -79,9 +97,10 @@ class AnalysisService:
                     is_dev=pkg.is_dev,
                     category=pkg.category,
                     depth=pkg.depth,
-                    purl=make_purl(pkg.name, pkg.version),
+                    purl=make_purl(pkg.name, pkg.version, pkg.ecosystem),
                     requirement_type="dev" if pkg.is_dev else "prod",
                     source=pkg.source,
+                    ecosystem=pkg.ecosystem,
                 )
                 self.db.add(dep)
                 dep_map[pkg.name] = dep
@@ -98,7 +117,7 @@ class AnalysisService:
             for dep in dep_map.values():
                 if not dep.version or dep.version == "0.0":
                     continue
-                vulns = self.correlator.correlate(dep.name, dep.version)
+                vulns = self.correlator.correlate(dep.name, dep.version, dep.ecosystem)
                 best: dict[str, tuple[Dependency, dict]] = {}
                 for raw in vulns:
                     candidate = self.enrichment.enrich(raw)

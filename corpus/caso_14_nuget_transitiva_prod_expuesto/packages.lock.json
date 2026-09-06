@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net8.0": {
+      "Serilog": {
+        "type": "Direct",
+        "resolved": "3.1.1",
+        "dependencies": {
+          "Newtonsoft.Json": "12.0.3"
+        }
+      },
+      "Newtonsoft.Json": {
+        "type": "Transitive",
+        "resolved": "12.0.3",
+        "dependencies": {}
+      }
+    }
+  }
+}

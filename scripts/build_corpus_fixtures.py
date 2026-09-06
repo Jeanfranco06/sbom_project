@@ -41,6 +41,10 @@ REAL_VULNERABLE = {
     "paramiko": "2.10.3",      # Caso 10: CVE-2023-48795 (5.9 medio, EPSS~0.93, parche 3.4.0)
 }
 
+REAL_VULNERABLE_NUGET = {
+    "Newtonsoft.Json": "12.0.3",  # CVE-2024-21907 (DoS, CVSS 7.5)
+}
+
 # Paquetes reales sin vulnerabilidades conocidas (casos negativos / ruido controlado)
 REAL_NEGATIVE = {
     "six": "1.16.0",
@@ -50,6 +54,10 @@ REAL_NEGATIVE = {
     "platformdirs": "4.2.2",
     "zipp": "3.19.2",
     "atomicwrites": "1.4.1",
+}
+
+REAL_NEGATIVE_NUGET = {
+    "Serilog": "3.1.1",
 }
 
 # Paquetes sinteticos (mock). No existen en PyPI; sus entradas se generan aqui.
@@ -170,18 +178,18 @@ def _safe_name(name: str, version: str) -> str:
     return re.sub(r"[^a-zA-Z0-9_.\-]", "_", f"{name}__{version}")
 
 
-def fetch_osv(fixtures_dir: Path, packages: dict[str, str]) -> dict[str, dict]:
+def fetch_osv(fixtures_dir: Path, packages: dict[str, str], ecosystem: str = "PyPI") -> dict[str, dict]:
     """Descarga respuestas OSV crudas y las guarda como snapshot local."""
     saved: dict[str, dict] = {}
     for name, version in sorted(packages.items()):
         payload = _post_json(
             OSV_QUERY_URL,
-            {"package": {"ecosystem": "PyPI", "name": name}, "version": version},
+            {"package": {"ecosystem": ecosystem, "name": name}, "version": version},
         )
         path = fixtures_dir / f"{_safe_name(name, version)}.json"
         path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         saved[f"{name}=={version}"] = payload
-        print(f"  OSV {name}=={version}: {len(payload.get('vulns', []))} vulns")
+        print(f"  OSV ({ecosystem}) {name}=={version}: {len(payload.get('vulns', []))} vulns")
     return saved
 
 
@@ -259,7 +267,8 @@ def main() -> int:
 
     print(f"Snapshot date: {SNAPSHOT_DATE}")
     print("[1/4] Descargando respuestas OSV (paquetes reales)...")
-    fetch_osv(osv_dir, {**REAL_VULNERABLE, **REAL_NEGATIVE})
+    fetch_osv(osv_dir, {**REAL_VULNERABLE, **REAL_NEGATIVE}, "PyPI")
+    fetch_osv(osv_dir, {**REAL_VULNERABLE_NUGET, **REAL_NEGATIVE_NUGET}, "NuGet")
 
     print("[2/4] Escribiendo entradas OSV sinteticas (mock)...")
     write_mock_osv(osv_dir)
