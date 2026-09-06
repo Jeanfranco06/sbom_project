@@ -14,14 +14,14 @@
         "CGA-g392-rr6w-3vvm"
       ],
       "database_specific": {
+        "github_reviewed_at": "2026-03-27T15:56:01Z",
+        "github_reviewed": true,
         "nvd_published_at": "2026-03-27T23:17:13Z",
         "severity": "MODERATE",
         "cwe_ids": [
           "CWE-130",
           "CWE-20"
-        ],
-        "github_reviewed_at": "2026-03-27T15:56:01Z",
-        "github_reviewed": true
+        ]
       },
       "references": [
         {
@@ -116,15 +116,15 @@
         "CGA-cj46-f22r-fr26"
       ],
       "database_specific": {
+        "github_reviewed": true,
+        "nvd_published_at": "2024-01-23T00:15:26Z",
+        "severity": "HIGH",
         "cwe_ids": [
           "CWE-203",
           "CWE-208",
           "CWE-385"
         ],
-        "github_reviewed_at": "2024-01-22T21:35:27Z",
-        "github_reviewed": true,
-        "nvd_published_at": "2024-01-23T00:15:26Z",
-        "severity": "HIGH"
+        "github_reviewed_at": "2024-01-22T21:35:27Z"
       },
       "references": [
         {

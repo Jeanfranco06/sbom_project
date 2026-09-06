@@ -196,13 +196,13 @@
         "CGA-jv2v-w8c5-pw44"
       ],
       "database_specific": {
+        "github_reviewed": true,
+        "nvd_published_at": "2024-05-06T15:15:23Z",
+        "severity": "HIGH",
         "cwe_ids": [
           "CWE-352"
         ],
-        "github_reviewed_at": "2024-05-06T14:21:27Z",
-        "github_reviewed": true,
-        "nvd_published_at": "2024-05-06T15:15:23Z",
-        "severity": "HIGH"
+        "github_reviewed_at": "2024-05-06T14:21:27Z"
       },
       "references": [
         {
@@ -380,13 +380,13 @@
         "CGA-4hv5-hj7q-c42v"
       ],
       "database_specific": {
-        "github_reviewed": true,
         "nvd_published_at": "2026-01-08T19:15:59Z",
         "severity": "MODERATE",
         "cwe_ids": [
           "CWE-67"
         ],
-        "github_reviewed_at": "2026-01-08T19:51:21Z"
+        "github_reviewed_at": "2026-01-08T19:51:21Z",
+        "github_reviewed": true
       },
       "references": [
         {
@@ -714,8 +714,8 @@
             "3.0.5"
           ],
           "database_specific": {
-            "source": "https://github.com/github/advisory-database/blob/main/advisories/github-reviewed/2024/10/GHSA-f9vj-2wh5-fj8j/GHSA-f9vj-2wh5-fj8j.json",
-            "last_known_affected_version_range": "<= 3.0.5"
+            "last_known_affected_version_range": "<= 3.0.5",
+            "source": "https://github.com/github/advisory-database/blob/main/advisories/github-reviewed/2024/10/GHSA-f9vj-2wh5-fj8j/GHSA-f9vj-2wh5-fj8j.json"
           }
         }
       ],
@@ -741,13 +741,13 @@
         "CGA-8wr4-34cx-82j9"
       ],
       "database_specific": {
+        "github_reviewed": true,
+        "nvd_published_at": "2025-11-29T03:16:00Z",
         "severity": "MODERATE",
         "cwe_ids": [
           "CWE-67"
         ],
-        "github_reviewed_at": "2025-12-02T00:27:38Z",
-        "github_reviewed": true,
-        "nvd_published_at": "2025-11-29T03:16:00Z"
+        "github_reviewed_at": "2025-12-02T00:27:38Z"
       },
       "references": [
         {
@@ -921,14 +921,14 @@
         "CGA-q6f7-x3w6-52gc"
       ],
       "database_specific": {
+        "severity": "MODERATE",
+        "github_reviewed": true,
+        "github_reviewed_at": "2023-10-25T14:22:59Z",
         "nvd_published_at": "2023-10-25T18:17:36Z",
         "cwe_ids": [
           "CWE-400",
           "CWE-787"
-        ],
-        "severity": "MODERATE",
-        "github_reviewed": true,
-        "github_reviewed_at": "2023-10-25T14:22:59Z"
+        ]
       },
       "references": [
         {
@@ -1240,13 +1240,13 @@
         "CGA-h8v7-4923-8jff"
       ],
       "database_specific": {
+        "cwe_ids": [
+          "CWE-400"
+        ],
         "severity": "MODERATE",
         "github_reviewed": true,
         "github_reviewed_at": "2024-10-25T19:44:43Z",
-        "nvd_published_at": "2024-10-25T20:15:04Z",
-        "cwe_ids": [
-          "CWE-400"
-        ]
+        "nvd_published_at": "2024-10-25T20:15:04Z"
       },
       "references": [
         {
@@ -1341,8 +1341,8 @@
             "3.0.5"
           ],
           "database_specific": {
-            "source": "https://github.com/github/advisory-database/blob/main/advisories/github-reviewed/2024/10/GHSA-q34m-jh98-gwm2/GHSA-q34m-jh98-gwm2.json",
-            "last_known_affected_version_range": "<= 3.0.5"
+            "last_known_affected_version_range": "<= 3.0.5",
+            "source": "https://github.com/github/advisory-database/blob/main/advisories/github-reviewed/2024/10/GHSA-q34m-jh98-gwm2/GHSA-q34m-jh98-gwm2.json"
           }
         },
         {
@@ -1461,14 +1461,14 @@
         "CGA-75jp-v7vc-4hxj"
       ],
       "database_specific": {
+        "github_reviewed": true,
+        "nvd_published_at": "2023-02-14T20:15:00Z",
+        "severity": "HIGH",
         "cwe_ids": [
           "CWE-400",
           "CWE-770"
         ],
-        "github_reviewed_at": "2023-02-15T15:36:26Z",
-        "github_reviewed": true,
-        "nvd_published_at": "2023-02-14T20:15:00Z",
-        "severity": "HIGH"
+        "github_reviewed_at": "2023-02-15T15:36:26Z"
       },
       "references": [
         {

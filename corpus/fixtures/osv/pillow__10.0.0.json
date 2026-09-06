@@ -15,14 +15,14 @@
         "CGA-p8qm-3j6v-j8xp"
       ],
       "database_specific": {
+        "severity": "CRITICAL",
         "cwe_ids": [
           "CWE-94",
           "CWE-95"
         ],
         "github_reviewed_at": "2024-01-22T21:28:18Z",
         "github_reviewed": true,
-        "nvd_published_at": "2024-01-19T20:15:11Z",
-        "severity": "CRITICAL"
+        "nvd_published_at": "2024-01-19T20:15:11Z"
       },
       "references": [
         {
@@ -401,13 +401,13 @@
         "CGA-cfc6-cphx-576f"
       ],
       "database_specific": {
-        "github_reviewed_at": "2026-07-20T21:13:18Z",
-        "nvd_published_at": "2026-07-06T19:17:08Z",
         "cwe_ids": [
           "CWE-789"
         ],
         "severity": "HIGH",
-        "github_reviewed": true
+        "github_reviewed": true,
+        "github_reviewed_at": "2026-07-20T21:13:18Z",
+        "nvd_published_at": "2026-07-06T19:17:08Z"
       },
       "references": [
         {
@@ -979,13 +979,13 @@
         "CGA-j489-cxm6-q8p5"
       ],
       "database_specific": {
+        "github_reviewed_at": "2026-07-20T21:08:13Z",
         "nvd_published_at": "2026-07-14T17:17:03Z",
         "cwe_ids": [
           "CWE-125"
         ],
         "severity": "HIGH",
-        "github_reviewed": true,
-        "github_reviewed_at": "2026-07-20T21:08:13Z"
+        "github_reviewed": true
       },
       "references": [
         {
@@ -1169,14 +1169,14 @@
         "CGA-ww8f-85m7-jh8q"
       ],
       "database_specific": {
-        "github_reviewed": true,
-        "github_reviewed_at": "2026-07-20T23:09:53Z",
         "nvd_published_at": "2026-07-14T16:17:01Z",
         "cwe_ids": [
           "CWE-190",
           "CWE-787"
         ],
-        "severity": "HIGH"
+        "severity": "HIGH",
+        "github_reviewed": true,
+        "github_reviewed_at": "2026-07-20T23:09:53Z"
       },
       "references": [
         {
@@ -1554,13 +1554,13 @@
         "CGA-3764-q237-9fc3"
       ],
       "database_specific": {
-        "github_reviewed": true,
-        "github_reviewed_at": "2026-07-20T23:19:00Z",
         "nvd_published_at": "2026-07-14T16:17:02Z",
         "cwe_ids": [
           "CWE-787"
         ],
-        "severity": "HIGH"
+        "severity": "HIGH",
+        "github_reviewed": true,
+        "github_reviewed_at": "2026-07-20T23:19:00Z"
       },
       "references": [
         {
@@ -1748,13 +1748,13 @@
         "CGA-hwgg-pxhc-xv74"
       ],
       "database_specific": {
+        "cwe_ids": [
+          "CWE-125"
+        ],
         "severity": "MODERATE",
         "github_reviewed": true,
         "github_reviewed_at": "2026-07-20T23:09:36Z",
-        "nvd_published_at": "2026-07-14T16:17:01Z",
-        "cwe_ids": [
-          "CWE-125"
-        ]
+        "nvd_published_at": "2026-07-14T16:17:01Z"
       },
       "references": [
         {
@@ -3757,14 +3757,14 @@
         "CGA-p93w-ch77-3jv6"
       ],
       "database_specific": {
-        "github_reviewed": true,
         "github_reviewed_at": "2026-07-20T23:11:29Z",
         "nvd_published_at": "2026-07-14T17:17:14Z",
         "cwe_ids": [
           "CWE-400",
           "CWE-770"
         ],
-        "severity": "HIGH"
+        "severity": "HIGH",
+        "github_reviewed": true
       },
       "references": [
         {
@@ -3890,13 +3890,13 @@
         "CGA-3p6j-f4mw-r376"
       ],
       "database_specific": {
-        "cwe_ids": [
-          "CWE-789"
-        ],
         "severity": "HIGH",
         "github_reviewed": true,
         "github_reviewed_at": "2026-07-20T21:13:35Z",
-        "nvd_published_at": "2026-07-06T19:17:08Z"
+        "nvd_published_at": "2026-07-06T19:17:08Z",
+        "cwe_ids": [
+          "CWE-789"
+        ]
       },
       "references": [
         {
@@ -4331,13 +4331,13 @@
         "CGA-9v75-xm6q-wrrf"
       ],
       "database_specific": {
+        "nvd_published_at": "2026-05-09T06:16:09Z",
         "cwe_ids": [
           "CWE-190"
         ],
         "severity": "MODERATE",
         "github_reviewed": true,
-        "github_reviewed_at": "2026-05-04T20:18:45Z",
-        "nvd_published_at": "2026-05-09T06:16:09Z"
+        "github_reviewed_at": "2026-05-04T20:18:45Z"
       },
       "references": [
         {
@@ -4520,13 +4520,13 @@
         "CGA-cmrx-7947-88wx"
       ],
       "database_specific": {
-        "github_reviewed_at": "2026-07-20T23:08:58Z",
         "nvd_published_at": "2026-07-14T17:17:14Z",
         "cwe_ids": [
           "CWE-190"
         ],
         "severity": "HIGH",
-        "github_reviewed": true
+        "github_reviewed": true,
+        "github_reviewed_at": "2026-07-20T23:08:58Z"
       },
       "references": [
         {

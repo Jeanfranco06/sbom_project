@@ -209,6 +209,61 @@ def parse_pipfile_lock(path: Path, direct_names: set[str]) -> list[ResolvedPacka
     return list(packages.values())
 
 
+def parse_csproj(content: bytes, source_name: str = "project.csproj") -> list[ResolvedPackage]:
+    """Parsea dependencias directas (PackageReference) de archivos .csproj."""
+    import xml.etree.ElementTree as ET
+    result: list[ResolvedPackage] = []
+    try:
+        root = ET.fromstring(content)
+        for elem in root.iter("PackageReference"):
+            name = elem.get("Include") or elem.get("Update")
+            version = elem.get("Version")
+            if name and version:
+                result.append(ResolvedPackage(
+                    name=name, version=version, is_direct=True,
+                    source=source_name, ecosystem="NuGet"
+                ))
+    except ET.ParseError:
+        pass
+    return result
+
+
+def parse_packages_lock_json(path: Path) -> list[ResolvedPackage]:
+    """Parsea packages.lock.json de NuGet."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return []
+        
+    packages: dict[str, ResolvedPackage] = {}
+    deps_section = data.get("dependencies", {})
+    
+    for tfm, packages_dict in deps_section.items():
+        if not isinstance(packages_dict, dict):
+            continue
+        for name, meta in packages_dict.items():
+            if not isinstance(meta, dict):
+                continue
+                
+            resolved = str(meta.get("resolved", ""))
+            dep_type = meta.get("type", "Direct")
+            is_direct = (dep_type == "Direct")
+            pkg_deps = list(meta.get("dependencies", {}).keys())
+            
+            packages[name] = ResolvedPackage(
+                name=name,
+                version=resolved,
+                is_direct=is_direct,
+                is_dev=False,
+                category="main",
+                source="packages.lock.json",
+                ecosystem="NuGet",
+                dependencies=pkg_deps,
+            )
+            
+    return list(packages.values())
+
+
 def _resolve_depths(packages: list[ResolvedPackage]) -> tuple[list[ResolvedPackage], list[tuple[str, str]]]:
     """Calcula profundidad (BFS) y aristas del grafo de dependencias."""
     index = {p.name: p for p in packages}
@@ -276,24 +331,32 @@ def analyze_project_dir(project_path: str) -> tuple[list[ResolvedPackage], list[
                     n = normalize_name(name)
                     direct_only.append(ResolvedPackage(name=n, version="", is_direct=True, is_dev=is_dev, category="dev" if is_dev else "main", source="Pipfile"))
 
+    # Buscar .csproj para dependencias directas en .NET
+    for csproj_file in root.glob("*.csproj"):
+        direct_only.extend(parse_csproj(csproj_file.read_bytes(), source_name=csproj_file.name))
     direct_names = {normalize_name(p.name) for p in direct_only}
 
     # Resolucion completa desde lockfiles
     poetry_lock = root / "poetry.lock"
     pipfile_lock = root / "Pipfile.lock"
+    nuget_lock = root / "packages.lock.json"
+    
     if poetry_lock.exists():
         packages = parse_poetry_lock(poetry_lock, direct_names)
         source = "poetry.lock"
     elif pipfile_lock.exists():
         packages = parse_pipfile_lock(pipfile_lock, direct_names)
         source = "Pipfile.lock"
+    elif nuget_lock.exists():
+        packages = parse_packages_lock_json(nuget_lock)
+        source = "packages.lock.json"
     elif direct_only:
         packages = direct_only
         source = "manifest"
     else:
         raise DependencyAnalysisError(
             "No se encontraron archivos de dependencias en el proyecto "
-            "(requirements.txt, pyproject.toml, poetry.lock o Pipfile.lock)."
+            "(requirements.txt, pyproject.toml, poetry.lock, Pipfile.lock o .csproj/packages.lock.json)."
         )
 
     # Sincronizar versiones de directas con la resolucion del lockfile

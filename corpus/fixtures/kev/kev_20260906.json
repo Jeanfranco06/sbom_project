@@ -1,0 +1,49 @@
+{
+  "title": "CISA Catalog of Known Exploited Vulnerabilities",
+  "catalogVersion": "2026.09.04",
+  "dateReleased": "2026-09-04T16:47:03.5197Z",
+  "count": 3,
+  "vulnerabilities": [
+    {
+      "cveID": "CVE-2023-4863",
+      "vendorProject": "Google",
+      "product": "Chromium WebP",
+      "vulnerabilityName": "Google Chromium WebP Heap-Based Buffer Overflow Vulnerability",
+      "dateAdded": "2023-09-13",
+      "shortDescription": "Google Chromium WebP contains a heap-based buffer overflow vulnerability that allows a remote attacker to perform an out-of-bounds memory write via a crafted HTML page. This vulnerability can affect applications that use the WebP Codec.",
+      "requiredAction": "Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.",
+      "dueDate": "2023-10-04",
+      "knownRansomwareCampaignUse": "Unknown",
+      "forensicTriage": "No",
+      "notes": "https://chromereleases.googleblog.com/2023/09/stable-channel-update-for-desktop_11.html?m=1; https://nvd.nist.gov/vuln/detail/CVE-2023-4863",
+      "cwes": [
+        "CWE-787"
+      ]
+    },
+    {
+      "cveID": "CVE-2026-99001",
+      "vendorProject": "CorpusLab",
+      "product": "filexplorer",
+      "vulnerabilityName": "CorpusLab filexplorer Remote Code Execution Vulnerability",
+      "dateAdded": "2026-08-15",
+      "shortDescription": "Entrada sintetica del corpus SecSBOM (caso 02): KEV sin parche disponible.",
+      "requiredAction": "Aplicar mitigaciones compensatorias; no existe parche del proveedor.",
+      "dueDate": "2026-09-05",
+      "knownRansomwareCampaignUse": "Unknown",
+      "notes": "Entrada sintetica; no corresponde a un producto real."
+    },
+    {
+      "cveID": "CVE-2026-99002",
+      "vendorProject": "CorpusLab",
+      "product": "devkit",
+      "vulnerabilityName": "CorpusLab devkit Information Disclosure Vulnerability",
+      "dateAdded": "2026-08-15",
+      "shortDescription": "Entrada sintetica del corpus SecSBOM (caso 06): KEV en dependencia de desarrollo.",
+      "requiredAction": "Aplicar mitigaciones compensatorias; no existe parche del proveedor.",
+      "dueDate": "2026-09-05",
+      "knownRansomwareCampaignUse": "Unknown",
+      "notes": "Entrada sintetica; no corresponde a un producto real."
+    }
+  ],
+  "corpus_note": "Snapshot reducido del corpus SecSBOM: solo CVEs presentes en el corpus mas entradas sinteticas (casos 02 y 06)."
+}

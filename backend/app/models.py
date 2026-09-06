@@ -89,6 +89,7 @@ class Dependency(Base):
     requirement_type: Mapped[str] = mapped_column(String(16), default="prod")  # prod|dev
     # Origen: requirements.txt | poetry.lock | Pipfile.lock
     source: Mapped[str] = mapped_column(String(64), default="manifest")
+    ecosystem: Mapped[str] = mapped_column(String(32), default="PyPI")
 
     project: Mapped[Project] = relationship(back_populates="dependencies")
     findings: Mapped[list["Finding"]] = relationship(back_populates="dependency", cascade="all, delete-orphan")
