@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-21-idna-transitiva-profunda-prod-noexp",
+    "description": "Caso 21: dependencia transitiva profunda (depth=4), produccion, NO expuesto, con parche. Objetivo: idna 3.6 / CVE-2024-3651 (GHSA-pjwv-9gwv-v869, transitiva via corpus-http-client -> requests -> urllib3 -> idna).",
+    "environment": "production",
+    "internet_exposed": false,
+    "data_criticality": "low"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-pjwv-9gwv-v869",
+      "component": "idna",
+      "installed_version": "3.6",
+      "is_direct_dependency": false,
+      "environment": "production",
+      "internet_exposed": false,
+      "data_criticality": "low",
+      "patch_available": true,
+      "expected_priority": "low",
+      "justification": "CVE-2024-3651: denial of service via trampa de Cuadrado Scandinavo en validacion IDN (CVSS 7.5, EPSS ~0.12) en produccion sin exposicion a Internet y datos de baja criticidad. Es transitiva a profundidad 4 (corpus-http-client -> requests -> urllib3 -> idna), lo que dificulta la remediacion directa. No esta en CISA KEV. Parche disponible (3.7). La falta de exposicion y data baja justifican prioridad low."
+    }
+  ],
+  "notes": "idna 3.6 reporta vulnerabilidades en el snapshot; solo la objetivo esta etiquetada. La cadena transitiva corpus-http-client -> requests -> urllib3 -> idna simula depth=4. Dependencias negativas six y packaging son seguras."
+}

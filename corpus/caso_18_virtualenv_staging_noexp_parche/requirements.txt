@@ -1,0 +1,6 @@
+# Caso 18: Dependencia directa, staging, NO expuesto, con parche (CVSS critico pero sin exposicion)
+# Objetivo: virtualenv 20.26.5 -> CVE-2024-53899 (GHSA-rqc4-2hc7-8c8v, CVSS 9.8, parche 20.26.6)
+virtualenv==20.26.5
+# Casos negativos (sin vulnerabilidades conocidas en el snapshot)
+packaging==24.1
+typing-extensions==4.12.2

@@ -1,0 +1,24 @@
+{
+  "expected_components": [
+    {
+      "name": "corpus-http-client",
+      "version": "1.0.0",
+      "is_direct": true
+    },
+    {
+      "name": "idna",
+      "version": "3.6",
+      "is_direct": false
+    },
+    {
+      "name": "six",
+      "version": "1.16.0",
+      "is_direct": true
+    },
+    {
+      "name": "packaging",
+      "version": "24.1",
+      "is_direct": true
+    }
+  ]
+}

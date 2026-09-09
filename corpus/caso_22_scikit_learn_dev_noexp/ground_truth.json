@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-22-scikit-learn-dev-noexp",
+    "description": "Caso 22: dependencia directa, development, NO expuesto, con parche. Objetivo: scikit-learn 1.4.1.post1 / CVE-2024-5206 (GHSA-jw8x-6495-233v).",
+    "environment": "development",
+    "internet_exposed": false,
+    "data_criticality": "low"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-jw8x-6495-233v",
+      "component": "scikit-learn",
+      "installed_version": "1.4.1.post1",
+      "is_direct_dependency": true,
+      "environment": "development",
+      "internet_exposed": false,
+      "data_criticality": "low",
+      "patch_available": true,
+      "expected_priority": "info",
+      "justification": "CVE-2024-5206: vulnerabilidad de intensidad baja (CVSS 5.3, EPSS ~0.008) en entorno de desarrollo sin exposicion a Internet y datos de baja criticidad. No esta en CISA KEV. Parche disponible (1.5.0). La combinacion de development + no exposicion + data baja + CVSS bajo + EPSS muy bajo justifica prioridad info (informativo, sin accion inmediata requerida)."
+    }
+  ],
+  "notes": "scikit-learn 1.4.1.post1 reporta vulnerabilidades en el snapshot; solo la objetivo esta etiquetada. El entorno development con data baja y EPSS extremadamente bajo clasifica como info."
+}

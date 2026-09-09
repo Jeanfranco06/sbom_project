@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "project": "SecSBOM",
+    "description": "Fleiss' kappa para validación de expertos",
+    "priority_labels": [
+      "critical",
+      "high",
+      "medium",
+      "low",
+      "info"
+    ],
+    " caso_ids": [
+      "caso_01",
+      "caso_02",
+      "caso_03",
+      "caso_04",
+      "caso_05",
+      "caso_06",
+      "caso_07",
+      "caso_08",
+      "caso_09",
+      "caso_10",
+      "caso_11",
+      "caso_12",
+      "caso_13",
+      "caso_14",
+      "caso_15",
+      "caso_16",
+      "caso_17",
+      "caso_18",
+      "caso_19",
+      "caso_20",
+      "caso_21",
+      "caso_22",
+      "caso_23",
+      "caso_24"
+    ]
+  },
+  "results": {
+    "kappa": -0.1664,
+    "P_observed": 0.1,
+    "P_expected": 0.2284,
+    "n_items": 24,
+    "n_raters": 3,
+    "n_categories": 5,
+    "interpretation": "Poor (below chance)",
+    "category_proportions": [
+      0.2916666666666667,
+      0.1527777777777778,
+      0.1388888888888889,
+      0.125,
+      0.2916666666666667
+    ],
+    "category_metrics": {
+      "critical": {
+        "proportion": 0.2916666666666667,
+        "total_votes": 21,
+        "agreement_contribution": 0.08506944444444446
+      },
+      "high": {
+        "proportion": 0.1527777777777778,
+        "total_votes": 11,
+        "agreement_contribution": 0.023341049382716052
+      },
+      "medium": {
+        "proportion": 0.1388888888888889,
+        "total_votes": 10,
+        "agreement_contribution": 0.019290123456790126
+      },
+      "low": {
+        "proportion": 0.125,
+        "total_votes": 9,
+        "agreement_contribution": 0.015625
+      },
+      "info": {
+        "proportion": 0.2916666666666667,
+        "total_votes": 21,
+        "agreement_contribution": 0.08506944444444446
+      }
+    },
+    "per_item_kappa": [
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ]
+  }
+}

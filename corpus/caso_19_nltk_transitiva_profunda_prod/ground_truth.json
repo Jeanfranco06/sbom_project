@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-19-nltk-transitiva-profunda-prod",
+    "description": "Caso 19: dependencia transitiva profunda (depth=3), produccion, expuesto, con parche. Objetivo: nltk 3.8.1 / CVE-2024-39705 (GHSA-cgvx-9447-vcch, transitiva via corpus-nlp-pipeline -> corpus-text-analyzer -> nltk).",
+    "environment": "production",
+    "internet_exposed": true,
+    "data_criticality": "high"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-cgvx-9447-vcch",
+      "component": "nltk",
+      "installed_version": "3.8.1",
+      "is_direct_dependency": false,
+      "environment": "production",
+      "internet_exposed": true,
+      "data_criticality": "high",
+      "patch_available": true,
+      "expected_priority": "high",
+      "justification": "CVE-2024-39705: arbitrary code execution via download en nltk.data (CVSS 9.8, EPSS ~0.25) en produccion expuesta a Internet con datos criticos. Aunque es transitiva a profundidad 3, el componente procesa datos externos via pipeline NLP. No esta en CISA KEV pero la exposicion publica y data alta justifican prioridad alta. Parche disponible (3.9). Remediacion requiere actualizar el parent chain."
+    }
+  ],
+  "notes": "nltk 3.8.1 reporta vulnerabilidades en el snapshot; solo la objetivo esta etiquetada. La cadena transitiva corpus-nlp-pipeline -> corpus-text-analyzer -> nltk es ficticia para simular profundidad=3. Dependencias negativas platformdirs y zipp son seguras."
+}

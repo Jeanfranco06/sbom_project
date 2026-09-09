@@ -1,0 +1,24 @@
+{
+  "expected_components": [
+    {
+      "name": "corpus-sandbox",
+      "version": "1.0.0",
+      "is_direct": true
+    },
+    {
+      "name": "RestrictedPython",
+      "version": "7.2",
+      "is_direct": false
+    },
+    {
+      "name": "colorama",
+      "version": "0.4.6",
+      "is_direct": true
+    },
+    {
+      "name": "six",
+      "version": "1.16.0",
+      "is_direct": true
+    }
+  ]
+}

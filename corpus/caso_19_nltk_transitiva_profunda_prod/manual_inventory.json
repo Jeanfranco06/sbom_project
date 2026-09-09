@@ -1,0 +1,24 @@
+{
+  "expected_components": [
+    {
+      "name": "corpus-nlp-pipeline",
+      "version": "1.0.0",
+      "is_direct": true
+    },
+    {
+      "name": "nltk",
+      "version": "3.8.1",
+      "is_direct": false
+    },
+    {
+      "name": "platformdirs",
+      "version": "4.2.2",
+      "is_direct": true
+    },
+    {
+      "name": "zipp",
+      "version": "3.19.2",
+      "is_direct": true
+    }
+  ]
+}

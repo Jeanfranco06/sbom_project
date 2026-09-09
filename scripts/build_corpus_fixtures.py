@@ -39,6 +39,15 @@ REAL_VULNERABLE = {
     "ecdsa": "0.18.0",         # Casos 08/11: CVE-2024-23342 (7.4, sin parche)
     "urllib3": "2.0.4",        # Casos 09/12: CVE-2023-43804 (parche 2.0.6)
     "paramiko": "2.10.3",      # Caso 10: CVE-2023-48795 (5.9 medio, EPSS~0.93, parche 3.4.0)
+    # Fase 3: Nuevos casos (17-24)
+    "setuptools": "69.1.1",    # Caso 17: CVE-2024-6345 (8.8, EPSS~0.15, parche 70.0)
+    "virtualenv": "20.26.5",   # Caso 18: CVE-2024-53899 (9.8, EPSS~0.41, parche 20.26.6)
+    "nltk": "3.8.1",           # Caso 19: CVE-2024-39705 (9.8, EPSS~0.25, parche 3.9)
+    "python-multipart": "0.0.6",  # Caso 20: CVE-2024-24762 (7.5, EPSS~0.35, parche 0.0.7)
+    "idna": "3.6",             # Caso 21: CVE-2024-3651 (7.5, EPSS~0.12, parche 3.7)
+    "scikit-learn": "1.4.1.post1",  # Caso 22: CVE-2024-5206 (5.3, EPSS~0.008, parche 1.5.0)
+    "RestrictedPython": "7.2", # Caso 23: CVE-2024-47532 (6.5, EPSS~0.05, parche 7.3)
+    "python-sql": "1.5.1",     # Caso 24: CVE-2024-9774 (6.5, EPSS~0.03, parche 1.5.2)
 }
 
 REAL_VULNERABLE_NUGET = {
@@ -122,6 +131,15 @@ MOCK_OSV = {
 FICTIONAL_EMPTY = {
     "corpus-webapp": "1.0.0",
     "corpus-authclient": "1.0.0",
+    # Fase 3: Paquetes ficticios para cadenas transitivas profundas
+    "corpus-nlp-pipeline": "1.0.0",   # Caso 19: depth=3 via corpus-text-analyzer -> nltk
+    "corpus-text-analyzer": "1.0.0",  # Caso 19: depth=2, parent de nltk
+    "corpus-fastapi-app": "1.0.0",    # Caso 20: depth=2 via starlette -> python-multipart
+    "starlette": "0.36.1",            # Caso 20: depth=1, parent de python-multipart
+    "corpus-http-client": "1.0.0",    # Caso 21: depth=4 via requests -> urllib3 -> idna
+    "requests": "2.31.0",             # Caso 21: depth=2, parent de urllib3
+    "corpus-sandbox": "1.0.0",        # Caso 23: depth=1, parent de RestrictedPython
+    "numpy": "1.26.4",                # Caso 22: negativo para scikit-learn
 }
 
 # EPSS sintetico para los mocks (probabilidad alta, coherente con estar en KEV)

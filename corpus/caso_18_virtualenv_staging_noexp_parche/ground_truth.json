@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-18-virtualenv-staging-noexp",
+    "description": "Caso 18: dependencia directa, staging, NO expuesto, con parche. Objetivo: virtualenv 20.26.5 / CVE-2024-53899 (GHSA-rqc4-2hc7-8c8v).",
+    "environment": "staging",
+    "internet_exposed": false,
+    "data_criticality": "medium"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-rqc4-2hc7-8c8v",
+      "component": "virtualenv",
+      "installed_version": "20.26.5",
+      "is_direct_dependency": true,
+      "environment": "staging",
+      "internet_exposed": false,
+      "data_criticality": "medium",
+      "patch_available": true,
+      "expected_priority": "medium",
+      "justification": "CVE-2024-53899: path traversal en virtualenv permite acceder a archivos fuera del directorio virtual (CVSS 9.8, EPSS ~0.41). Aunque CVSS es critico, el entorno staging NO expuesto a Internet y data_criticality media reducen la prioridad a medium. No esta en CISA KEV. Parche disponible (20.26.6). Direct dependency facilita remediacion inmediata."
+    }
+  ],
+  "notes": "virtualenv 20.26.5 reporta vulnerabilidades en el snapshot; solo la objetivo esta etiquetada. La combinacion de staging + no exposicion + data media justifica medium a pesar del CVSS 9.8."
+}

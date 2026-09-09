@@ -1,0 +1,6 @@
+# Caso 17: Dependencia directa, staging, expuesto, con parche (CVSS alto, EPSS moderado)
+# Objetivo: setuptools 69.1.1 -> CVE-2024-6345 (GHSA-cx63-2mw6-8hw5, CVSS 8.8, parche 70.0)
+setuptools==69.1.1
+# Casos negativos (sin vulnerabilidades conocidas en el snapshot)
+six==1.16.0
+colorama==0.4.6

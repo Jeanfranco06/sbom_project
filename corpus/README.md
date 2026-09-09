@@ -1,6 +1,6 @@
 # Corpus Experimental Controlado — SecSBOM (Fase A)
 
-Este directorio contiene la **verdad de terreno** del experimento: 12 proyectos de
+Este directorio contiene la **verdad de terreno** del experimento: 24 proyectos de
 laboratorio que aíslan las variables del modelo de priorización contextual, con sus
 etiquetas de prioridad esperada (`expected_priority`) para evaluar las hipótesis
 H1 (calidad de ranking), H3 (concordancia con expertos) y H4 (cobertura SBOM).
@@ -11,7 +11,9 @@ H1 (calidad de ranking), H3 (concordancia con expertos) y H4 (cobertura SBOM).
   estático (no ejecuta código), por lo que cada caso solo necesita su manifiesto
   de dependencias y su `ground_truth.json`.
 
-## Matriz de los 12 casos (Fase A.2)
+## Matriz de los 24 casos (Fase A.2 + Fase 3)
+
+### Fase A: Casos originales (01-16)
 
 | # | Caso | Alcance | Entorno | Expuesto | Parche | Paquete / CVE objetivo | Prioridad esperada |
 |---|------|---------|---------|----------|--------|------------------------|--------------------|
@@ -27,6 +29,28 @@ H1 (calidad de ranking), H3 (concordancia con expertos) y H4 (cobertura SBOM).
 | 10 | CVSS medio, EPSS alta | Directa | production | Sí | Sí | paramiko 2.10.3 / CVE-2023-48795 | **high** |
 | 11 | Caso gris ⚠ consenso | Transitiva | production | Sí | **No** | ecdsa 0.18.0 / CVE-2024-23342 | **medium** |
 | 12 | Criticidad de datos baja ⚠ consenso | Directa | production | Sí | Sí | urllib3 2.0.4 / CVE-2023-43804 | **medium** |
+
+### Fase 3: Casos NuGet (13-16)
+
+| # | Caso | Alcance | Entorno | Expuesto | Parche | Paquete / CVE objetivo | Prioridad esperada |
+|---|------|---------|---------|----------|--------|------------------------|--------------------|
+| 13 | NuGet directa prod expuesto | Directa | production | Sí | Sí | Newtonsoft.Json 12.0.3 / CVE-2024-21907 | **high** |
+| 14 | NuGet transitiva prod expuesto | Transitiva | production | Sí | Sí | Newtonsoft.Json 12.0.3 / CVE-2024-21907 | **medium** |
+| 15 | NuGet dev | Directa (dev) | production | No | Sí | Newtonsoft.Json 12.0.3 / CVE-2024-21907 | **low** |
+| 16 | NuGet ruido | Directa | development | No | **No** | Newtonsoft.Json 12.0.3 / CVE-2024-21907 | **low** |
+
+### Fase 3: Casos Python ampliados (17-24)
+
+| # | Caso | Alcance | Entorno | Expuesto | Parche | Paquete / CVE objetivo | Prioridad esperada |
+|---|------|---------|---------|----------|--------|------------------------|--------------------|
+| 17 | Staging con CVE alto | Directa | staging | Sí | Sí | setuptools 69.1.1 / CVE-2024-6345 | **high** |
+| 18 | Staging sin exposición | Directa | staging | No | Sí | virtualenv 20.26.5 / CVE-2024-53899 | **medium** |
+| 19 | Transitiva profunda (d=3) | Transitiva | production | Sí | Sí | nltk 3.8.1 / CVE-2024-39705 | **high** |
+| 20 | Transitiva staging | Transitiva | staging | Sí | Sí | python-multipart 0.0.6 / CVE-2024-24762 | **medium** |
+| 21 | Transitiva muy profunda (d=4) | Transitiva | production | No | Sí | idna 3.6 / CVE-2024-3651 | **low** |
+| 22 | Desarrollo sin exposición | Directa (dev) | development | No | Sí | scikit-learn 1.4.1 / CVE-2024-5206 | **info** |
+| 23 | Transitiva con criticidad alta | Transitiva | production | Sí | Sí | RestrictedPython 7.2 / CVE-2024-47532 | **medium** |
+| 24 | SQL injection prod expuesto | Directa | production | Sí | Sí | python-sql 1.5.1 / CVE-2024-9774 | **medium** |
 
 ⚠ Casos 06 y 12 (y el gris 11): etiquetas iniciales **pendientes de consenso del
 panel de expertos** (Fase A.4). ⚠ sintético: vulnerabilidad mock documentada en
@@ -46,9 +70,11 @@ corpus/
     osv/*.json                 # respuestas OSV crudas por paquete+version
     kev/kev_20260902.json      # KEV reducido al corpus (+ mocks)
     epss/epss_20260902.csv.gz  # EPSS reducido al corpus (+ mocks)
-  caso_XX_*/
-    requirements.txt | pyproject.toml | poetry.lock
+  caso_01_*/ ... caso_16_*/    # Fase A: casos originales Python/NuGet
+  caso_17_*/ ... caso_24_*/    # Fase 3: casos ampliados Python
+    requirements.txt           # manifiesto de dependencias
     ground_truth.json          # contexto del proyecto + etiquetas esperadas
+    manual_inventory.json      # inventario manual para validación SBOM
 ```
 
 ## Uso

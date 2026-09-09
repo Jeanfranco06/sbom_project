@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-23-restrictedpython-transitiva-prod",
+    "description": "Caso 23: dependencia transitiva (depth=2), produccion, expuesto, con parche. Objetivo: RestrictedPython 7.2 / CVE-2024-47532 (GHSA-5rfv-66g4-jr8h, transitiva via corpus-sandbox -> RestrictedPython).",
+    "environment": "production",
+    "internet_exposed": true,
+    "data_criticality": "high"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-5rfv-66g4-jr8h",
+      "component": "RestrictedPython",
+      "installed_version": "7.2",
+      "is_direct_dependency": false,
+      "environment": "production",
+      "internet_exposed": true,
+      "data_criticality": "high",
+      "patch_available": true,
+      "expected_priority": "medium",
+      "justification": "CVE-2024-47532: bypass de restricciones de seguridad en RestrictedPython permite ejecutar codigo no autorizado (CVSS 6.5, EPSS ~0.05) en produccion expuesta a Internet con datos criticos. Es transitiva (depth=2) via corpus-sandbox. No esta en CISA KEV. Parche disponible (7.3). Aunque la exposicion y data son altos, el CVSS moderado (6.5) y EPSS bajo justifican prioridad medium en lugar de high."
+    }
+  ],
+  "notes": "RestrictedPython 7.2 reporta vulnerabilidades en el snapshot; solo la objetivo esta etiquetada. La cadena transitiva corpus-sandbox -> RestrictedPython simula depth=2. Dependencias negativas colorama y six son seguras."
+}

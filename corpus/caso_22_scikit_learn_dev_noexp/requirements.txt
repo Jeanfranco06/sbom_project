@@ -1,0 +1,6 @@
+# Caso 22: Dependencia directa, development, NO expuesto, con parche (CVSS bajo, EPSS muy bajo)
+# Objetivo: scikit-learn 1.4.1.post1 -> CVE-2024-5206 (GHSA-jw8x-6495-233v, CVSS 5.3, parche 1.5.0)
+scikit-learn==1.4.1.post1
+# Casos negativos (sin vulnerabilidades conocidas en el snapshot)
+numpy==1.26.4
+typing-extensions==4.12.2

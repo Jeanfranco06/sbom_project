@@ -1,0 +1,7 @@
+# Caso 19: Dependencia TRANSITIVA profunda (depth=3), produccion, expuesto, con parche
+# Objetivo: nltk 3.8.1 (transitiva via corpus-nlp-pipeline -> corpus-text-analyzer -> nltk)
+# CVE-2024-39705 (GHSA-cgvx-9447-vcch, CVSS 9.8, parche 3.9)
+corpus-nlp-pipeline==1.0.0
+# Casos negativos (sin vulnerabilidades conocidas en el snapshot)
+platformdirs==4.2.2
+zipp==3.19.2

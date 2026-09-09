@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-17-setuptools-staging-expuesto",
+    "description": "Caso 17: dependencia directa, staging, expuesto, con parche. Objetivo: setuptools 69.1.1 / CVE-2024-6345 (GHSA-cx63-2mw6-8hw5).",
+    "environment": "staging",
+    "internet_exposed": true,
+    "data_criticality": "high"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-cx63-2mw6-8hw5",
+      "component": "setuptools",
+      "installed_version": "69.1.1",
+      "is_direct_dependency": true,
+      "environment": "staging",
+      "internet_exposed": true,
+      "data_criticality": "high",
+      "patch_available": true,
+      "expected_priority": "high",
+      "justification": "CVE-2024-6345: ejecucion remota de codigo via download_functions en package_index (CVSS 8.8, EPSS ~0.15) en entorno staging expuesto a Internet con datos criticos. Aunque no esta en CISA KEV, la exposicion publica y la alta criticidad de datos justifican prioridad alta. Parche disponible (70.0). Direct dependency facilita remediacion."
+    }
+  ],
+  "notes": "setuptools 69.1.1 reporta vulnerabilidades en el snapshot; solo la objetivo esta etiquetada. El entorno staging reduce la prioridad relativa a production pero la exposicion internet y data_criticality alta mantienen high."
+}

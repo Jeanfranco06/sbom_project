@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-20-multipart-transitiva-staging",
+    "description": "Caso 20: dependencia transitiva (depth=2), staging, expuesto, con parche. Objetivo: python-multipart 0.0.6 / CVE-2024-24762 (GHSA-2jv5-9r88-3w3p, transitiva via corpus-fastapi-app -> starlette -> python-multipart).",
+    "environment": "staging",
+    "internet_exposed": true,
+    "data_criticality": "medium"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-2jv5-9r88-3w3p",
+      "component": "python-multipart",
+      "installed_version": "0.0.6",
+      "is_direct_dependency": false,
+      "environment": "staging",
+      "internet_exposed": true,
+      "data_criticality": "medium",
+      "patch_available": true,
+      "expected_priority": "medium",
+      "justification": "CVE-2024-24762: Regular expression Denial of Service (ReDoS) en parse de multipart form data (CVSS 7.5, EPSS ~0.35) en staging expuesto a Internet con datos medios. Es transitiva (depth=2) via starlette, componente que procesa entradas HTTP externas. No esta en CISA KEV. Parche disponible (0.0.7). La combinacion de staging + data media justifica prioridad medium."
+    }
+  ],
+  "notes": "python-multipart 0.0.6 reporta vulnerabilidades en el snapshot; solo la objetivo esta etiquetada. La cadena transitiva corpus-fastapi-app -> starlette -> python-multipart simula depth=2. Dependencias negativas atomicwrites y platformdirs son seguras."
+}

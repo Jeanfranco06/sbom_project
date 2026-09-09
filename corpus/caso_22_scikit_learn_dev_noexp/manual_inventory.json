@@ -1,0 +1,19 @@
+{
+  "expected_components": [
+    {
+      "name": "scikit-learn",
+      "version": "1.4.1.post1",
+      "is_direct": true
+    },
+    {
+      "name": "numpy",
+      "version": "1.26.4",
+      "is_direct": true
+    },
+    {
+      "name": "typing-extensions",
+      "version": "4.12.2",
+      "is_direct": true
+    }
+  ]
+}

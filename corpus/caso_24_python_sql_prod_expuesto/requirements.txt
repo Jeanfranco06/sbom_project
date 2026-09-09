@@ -1,0 +1,6 @@
+# Caso 24: Dependencia directa, produccion, expuesto, con parche (CVSS moderado, EPSS bajo)
+# Objetivo: python-sql 1.5.1 -> CVE-2024-9774 (GHSA-pq9p-pc3p-9hm4, CVSS 6.5, parche 1.5.2)
+python-sql==1.5.1
+# Casos negativos (sin vulnerabilidades conocidas en el snapshot)
+packaging==24.1
+typing-extensions==4.12.2

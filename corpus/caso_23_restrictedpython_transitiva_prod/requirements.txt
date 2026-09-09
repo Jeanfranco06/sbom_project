@@ -1,0 +1,7 @@
+# Caso 23: Dependencia TRANSITIVA (depth=2), produccion, expuesto, con parche
+# Objetivo: RestrictedPython 7.2 (transitiva via corpus-sandbox -> RestrictedPython)
+# CVE-2024-47532 (GHSA-5rfv-66g4-jr8h, CVSS 6.5, parche 7.3)
+corpus-sandbox==1.0.0
+# Casos negativos (sin vulnerabilidades conocidas en el snapshot)
+colorama==0.4.6
+six==1.16.0

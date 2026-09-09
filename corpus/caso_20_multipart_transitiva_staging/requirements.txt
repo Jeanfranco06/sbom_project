@@ -1,0 +1,7 @@
+# Caso 20: Dependencia TRANSITIVA (depth=2), staging, expuesto, con parche
+# Objetivo: python-multipart 0.0.6 (transitiva via corpus-fastapi-app -> starlette -> python-multipart)
+# CVE-2024-24762 (GHSA-2jv5-9r88-3w3p, CVSS 7.5, parche 0.0.7)
+corpus-fastapi-app==1.0.0
+# Casos negativos (sin vulnerabilidades conocidas en el snapshot)
+atomicwrites==1.4.1
+platformdirs==4.2.2

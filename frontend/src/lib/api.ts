@@ -1,0 +1,166 @@
+import type {
+  Project,
+  Analysis,
+  Dependency,
+  Finding,
+  GroundTruth,
+  Metrics,
+  Weights,
+  UsabilityTrial,
+  ExperimentRun,
+  SnapshotStatus,
+  GraphData,
+} from '@/types';
+
+const API_BASE = '/api';
+
+async function fetchApi<T>(
+  endpoint: string,
+  options?: RequestInit
+): Promise<T> {
+  const url = `${API_BASE}${endpoint}`;
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers,
+    },
+    ...options,
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`API Error: ${response.status} - ${error}`);
+  }
+
+  return response.json();
+}
+
+export const api = {
+  // Version
+  getVersion: () => fetchApi<{ version: string }>('/version'),
+
+  // Projects
+  getProjects: () => fetchApi<Project[]>('/projects'),
+  getProject: (id: number) => fetchApi<Project>(`/projects/${id}`),
+  createProject: (data: Partial<Project>) =>
+    fetchApi<Project>('/projects', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  updateProject: (id: number, data: Partial<Project>) =>
+    fetchApi<Project>(`/projects/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+  deleteProject: (id: number) =>
+    fetchApi<void>(`/projects/${id}`, { method: 'DELETE' }),
+
+  // Analysis
+  analyzeProject: (id: number, mode: string = 'offline') =>
+    fetchApi<Analysis>(`/projects/${id}/analyze?mode=${mode}`, {
+      method: 'POST',
+    }),
+  getAnalysis: (id: number) => fetchApi<Analysis>(`/projects/${id}/analysis`),
+
+  // Dependencies
+  getDependencies: (id: number) =>
+    fetchApi<Dependency[]>(`/projects/${id}/dependencies`),
+
+  // Findings
+  getFindings: (
+    id: number,
+    filters?: {
+      priority?: string;
+      kev?: boolean;
+      direct?: boolean;
+      q?: string;
+    }
+  ) => {
+    const params = new URLSearchParams();
+    if (filters?.priority) params.append('priority', filters.priority);
+    if (filters?.kev) params.append('kev', 'true');
+    if (filters?.direct) params.append('direct', 'true');
+    if (filters?.q) params.append('q', filters.q);
+    const query = params.toString();
+    return fetchApi<Finding[]>(`/projects/${id}/findings${query ? `?${query}` : ''}`);
+  },
+  getFinding: (projectId: number, findingId: number) =>
+    fetchApi<Finding>(`/projects/${projectId}/findings/${findingId}`),
+
+  // SBOM
+  getSBOM: (id: number) => fetchApi<unknown>(`/projects/${id}/sbom`),
+
+  // Graph
+  getGraph: (id: number) => fetchApi<GraphData>(`/projects/${id}/graph`),
+
+  // Ground Truth
+  getGroundTruth: (id: number) =>
+    fetchApi<GroundTruth[]>(`/projects/${id}/ground-truth`),
+  setGroundTruth: (id: number, data: Partial<GroundTruth>[]) =>
+    fetchApi<GroundTruth[]>(`/projects/${id}/ground-truth`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  deleteGroundTruth: (id: number) =>
+    fetchApi<void>(`/projects/${id}/ground-truth`, { method: 'DELETE' }),
+
+  // Metrics
+  getMetrics: (id: number, k: number = 10) =>
+    fetchApi<Metrics>(`/projects/${id}/metrics?k=${k}`),
+
+  // Settings
+  getSettings: () => fetchApi<Weights>('/settings'),
+  updateWeights: (weights: Weights) =>
+    fetchApi<Weights>('/settings/weights', {
+      method: 'PUT',
+      body: JSON.stringify(weights),
+    }),
+
+  // Snapshots
+  getSnapshotStatus: () => fetchApi<SnapshotStatus>('/snapshots/status'),
+  downloadSnapshots: () =>
+    fetchApi<{ status: string }>('/snapshots/download', { method: 'POST' }),
+
+  // Usability
+  getTriageScenario: (projectId: number, condition: 'A' | 'D') =>
+    fetchApi<{
+      condition: string;
+      scenario: string;
+      findings: Finding[];
+    }>(`/projects/${projectId}/triage/${condition}`),
+  createTrial: (trial: Partial<UsabilityTrial>) =>
+    fetchApi<UsabilityTrial>('/usability/trials', {
+      method: 'POST',
+      body: JSON.stringify(trial),
+    }),
+  getTrials: () => fetchApi<UsabilityTrial[]>('/usability/trials'),
+  getTrialsSummary: () =>
+    fetchApi<{
+      condition_a: { avg_time: number; accuracy: number; count: number };
+      condition_d: { avg_time: number; accuracy: number; count: number };
+    }>('/usability/trials/summary'),
+  deleteTrials: () =>
+    fetchApi<void>('/usability/trials', { method: 'DELETE' }),
+
+  // Experiments
+  getRuns: (projectId: number) =>
+    fetchApi<ExperimentRun[]>(`/projects/${projectId}/runs`),
+  createRun: (projectId: number, run: Partial<ExperimentRun>) =>
+    fetchApi<ExperimentRun>(`/projects/${projectId}/runs`, {
+      method: 'POST',
+      body: JSON.stringify(run),
+    }),
+  deleteRuns: (projectId: number) =>
+    fetchApi<void>(`/projects/${projectId}/runs`, { method: 'DELETE' }),
+  getStatistics: (metric: string) =>
+    fetchApi<{
+      statistic: number;
+      p_value: number;
+      effect_size: number;
+      n_pairs: number;
+    }>(`/experiment/statistics?metric=${metric}`),
+
+  // Export
+  exportProject: (id: number, format: 'json' | 'csv' | 'pdf') =>
+    fetchApi<Blob>(`/projects/${id}/export?format=${format}`),
+};

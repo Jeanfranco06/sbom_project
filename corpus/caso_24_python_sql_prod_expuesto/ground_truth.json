@@ -1,0 +1,24 @@
+{
+  "project": {
+    "name": "corpus-caso-24-python-sql-prod-expuesto",
+    "description": "Caso 24: dependencia directa, produccion, expuesto, con parche. Objetivo: python-sql 1.5.1 / CVE-2024-9774 (GHSA-pq9p-pc3p-9hm4).",
+    "environment": "production",
+    "internet_exposed": true,
+    "data_criticality": "high"
+  },
+  "ground_truth": [
+    {
+      "vuln_id": "GHSA-pq9p-pc3p-9hm4",
+      "component": "python-sql",
+      "installed_version": "1.5.1",
+      "is_direct_dependency": true,
+      "environment": "production",
+      "internet_exposed": true,
+      "data_criticality": "high",
+      "patch_available": true,
+      "expected_priority": "medium",
+      "justification": "CVE-2024-9774: SQL injection via construction de consultas con parametros no sanitizados (CVSS 6.5, EPSS ~0.03) en produccion expuesta a Internet con datos criticos. No esta en CISA KEV. Parche disponible (1.5.2). Direct dependency facilita remediacion inmediata. Aunque la exposicion y data son altos, el CVSS moderado (6.5) y EPSS bajo justifican prioridad medium en lugar de high."
+    }
+  ],
+  "notes": "python-sql 1.5.1 reporta vulnerabilidades en el snapshot; solo la objetivo esta etiquetada. La combinacion de production + exposed + high data con CVSS moderado resulta en medium."
+}

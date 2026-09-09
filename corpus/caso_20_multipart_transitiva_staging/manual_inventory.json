@@ -1,0 +1,24 @@
+{
+  "expected_components": [
+    {
+      "name": "corpus-fastapi-app",
+      "version": "1.0.0",
+      "is_direct": true
+    },
+    {
+      "name": "python-multipart",
+      "version": "0.0.6",
+      "is_direct": false
+    },
+    {
+      "name": "atomicwrites",
+      "version": "1.4.1",
+      "is_direct": true
+    },
+    {
+      "name": "platformdirs",
+      "version": "4.2.2",
+      "is_direct": true
+    }
+  ]
+}
