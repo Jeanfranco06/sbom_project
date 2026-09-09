@@ -1,4 +1,21 @@
 services:
+  postgres:
+    image: postgres:16
+    container_name: secsbom-postgres
+    environment:
+      POSTGRES_DB: secsbom
+      POSTGRES_USER: secsbom
+      POSTGRES_PASSWORD: secsbom
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U secsbom -d secsbom"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   secsbom:
     build: .
     container_name: secsbom
@@ -7,6 +24,10 @@ services:
     environment:
       SECSBOM_MODE: hybrid
       SECSBOM_BASE_DIR: /app
+      DATABASE_URL: postgresql+psycopg://secsbom:secsbom@postgres:5432/secsbom
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
       - secsbom_data:/app/data
       - ./examples:/app/examples:ro
@@ -14,3 +35,4 @@ services:
 
 volumes:
   secsbom_data:
+  postgres_data:

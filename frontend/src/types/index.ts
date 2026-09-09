@@ -41,12 +41,12 @@ export interface Finding {
   epss_score: number | null;
   is_kev: boolean;
   patch_available: boolean;
-  fixed_versions: string | null;
+  fixed_versions: string[] | null;
   introduced_versions: string | null;
   priority_score: number;
   priority_label: string;
   factors: string | null;
-  explanation: string | null;
+  explanation: Explanation | string | null;
   rules_applied: string | null;
   dependency?: Dependency;
 }

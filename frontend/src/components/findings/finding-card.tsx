@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { PriorityBadge } from '@/components/ui/priority-badge';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
-import type { Finding } from '@/types';
+import type { Explanation, Finding } from '@/types';
 
 interface FindingCardProps {
   finding: Finding;
@@ -82,7 +82,7 @@ export function FindingCard({ finding, className }: FindingCardProps) {
             {finding.fixed_versions && (
               <div>
                 <h4 className="font-medium text-sm mb-2">Versión corregida</h4>
-                <p className="text-sm font-mono">{finding.fixed_versions}</p>
+                <p className="text-sm font-mono">{finding.fixed_versions.join(', ')}</p>
               </div>
             )}
 
@@ -126,9 +126,20 @@ function getSeverityColor(severity: string): string {
   }
 }
 
-function renderExplanation(explanation: string): React.ReactNode {
+function renderExplanation(explanation: Explanation | string): React.ReactNode {
+  let data: Explanation;
+
+  if (typeof explanation === 'string') {
+    try {
+      data = JSON.parse(explanation) as Explanation;
+    } catch {
+      return explanation;
+    }
+  } else {
+    data = explanation;
+  }
+
   try {
-    const data = JSON.parse(explanation);
     if (data.factors) {
       return (
         <div className="space-y-2">
@@ -136,7 +147,7 @@ function renderExplanation(explanation: string): React.ReactNode {
             <div key={i} className="flex justify-between">
               <span>{factor.label}</span>
               <span className="font-mono">
-                {factor.value.toFixed(2)} × {factor.contribution.toFixed(1)}%
+                {formatNumber(factor.value, 2)} × {formatNumber(factor.contribution, 1)}%
               </span>
             </div>
           ))}
@@ -148,8 +159,12 @@ function renderExplanation(explanation: string): React.ReactNode {
         </div>
       );
     }
-    return explanation;
+    return JSON.stringify(data);
   } catch {
-    return explanation;
+    return typeof explanation === 'string' ? explanation : JSON.stringify(explanation);
   }
+}
+
+function formatNumber(value: unknown, decimals: number): string {
+  return typeof value === 'number' ? value.toFixed(decimals) : '-';
 }

@@ -98,6 +98,7 @@ secsbom/
 - Python 3.13+
 - Node.js 18+
 - npm
+- PostgreSQL 16+ (o Docker Desktop)
 
 ### Instalación
 
@@ -120,11 +121,16 @@ cd ..
 ### Ejecución
 
 ```powershell
-# Terminal 1: Backend (FastAPI)
+# Terminal 1: PostgreSQL
+docker compose up -d postgres
+
+# Terminal 2: Backend (FastAPI)
 cd backend
+pip install -r requirements.txt
+$env:DATABASE_URL = "postgresql+psycopg://secsbom:secsbom@localhost:5432/secsbom"
 uvicorn app.main:app --reload --port 8000
 
-# Terminal 2: Frontend (Next.js)
+# Terminal 3: Frontend (Next.js)
 cd frontend
 npm run dev
 ```
