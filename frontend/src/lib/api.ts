@@ -144,8 +144,8 @@ export const api = {
   getTriageScenario: (projectId: number, condition: 'A' | 'D') =>
     fetchApi<{
       condition: string;
-      scenario: string;
-      findings: Finding[];
+      project_id: number;
+      cards: Finding[];
     }>(`/projects/${projectId}/triage/${condition}`),
   createTrial: (trial: Partial<UsabilityTrial>) =>
     fetchApi<UsabilityTrial>('/usability/trials', {
