@@ -32,6 +32,10 @@ def test_projects_lifecycle(sample_project):
     assert r.status_code == 200
     assert len(r.json()) == 1
 
+    r = client.get(f"/api/projects/{project_id}/analysis")
+    assert r.status_code == 200
+    assert r.json()["analysis"] is None
+
     r = client.post(f"/api/projects/{project_id}/analyze")
     assert r.status_code == 200
     assert r.json()["status"] in ("done", "error")

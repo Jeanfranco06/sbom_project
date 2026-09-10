@@ -1,6 +1,7 @@
 import type {
   Project,
   Analysis,
+  AnalysisSummary,
   Dependency,
   Finding,
   GroundTruth,
@@ -10,6 +11,7 @@ import type {
   ExperimentRun,
   SnapshotStatus,
   GraphData,
+  SettingsOut,
 } from '@/types';
 
 const API_BASE = '/api';
@@ -33,6 +35,16 @@ async function fetchApi<T>(
   }
 
   return response.json();
+}
+
+async function fetchBlob(endpoint: string): Promise<Blob> {
+  const url = `${API_BASE}${endpoint}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`API Error: ${response.status} - ${error}`);
+  }
+  return response.blob();
 }
 
 export const api = {
@@ -60,7 +72,7 @@ export const api = {
     fetchApi<Analysis>(`/projects/${id}/analyze?mode=${mode}`, {
       method: 'POST',
     }),
-  getAnalysis: (id: number) => fetchApi<Analysis>(`/projects/${id}/analysis`),
+  getAnalysis: (id: number) => fetchApi<AnalysisSummary>(`/projects/${id}/analysis`),
 
   // Dependencies
   getDependencies: (id: number) =>
@@ -109,11 +121,18 @@ export const api = {
     fetchApi<Metrics>(`/projects/${id}/metrics?k=${k}`),
 
   // Settings
-  getSettings: () => fetchApi<Weights>('/settings'),
+  getSettings: () => fetchApi<SettingsOut>('/settings'),
   updateWeights: (weights: Weights) =>
     fetchApi<Weights>('/settings/weights', {
       method: 'PUT',
       body: JSON.stringify(weights),
+    }),
+
+  // Mode
+  updateMode: (mode: string) =>
+    fetchApi<{ mode: string }>('/settings/mode', {
+      method: 'PUT',
+      body: JSON.stringify({ mode }),
     }),
 
   // Snapshots
@@ -160,7 +179,35 @@ export const api = {
       n_pairs: number;
     }>(`/experiment/statistics?metric=${metric}`),
 
+  // Risk Assessment
+  getRiskAssessment: (id: number) =>
+    fetchApi<{
+      project_id: number;
+      overall_risk_score: number;
+      risk_level: string;
+      dimensions: Array<{
+        name: string;
+        label: string;
+        score: number;
+        weight: number;
+        findings_count: number;
+        critical_count: number;
+        description: string;
+      }>;
+      top_actions: Array<{
+        priority: number;
+        title: string;
+        description: string;
+        effort: string;
+        affected_packages: string[];
+        risk_reduction: number;
+        finding_ids: number[];
+      }>;
+      summary: string;
+      stats: Record<string, unknown>;
+    }>(`/projects/${id}/risk-assessment`),
+
   // Export
   exportProject: (id: number, format: 'json' | 'csv' | 'pdf') =>
-    fetchApi<Blob>(`/projects/${id}/export?format=${format}`),
+    fetchBlob(`/projects/${id}/export?format=${format}`),
 };

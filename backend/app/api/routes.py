@@ -5,6 +5,7 @@ import json
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFile, File, Form
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session, selectinload
 import shutil
 
@@ -28,6 +29,7 @@ from ..schemas import (
     ThresholdsUpdate,
 )
 from ..services.analysis_service import AnalysisService, summary_for, to_finding_dict
+from ..services.risk_assessment import assess_project
 from ..services.dependency_analyzer import DependencyAnalysisError
 from ..services.metrics import metrics_for
 from ..services.report_generator import export_csv, export_json, export_pdf
@@ -195,13 +197,10 @@ def analyze_project(project_id: int, db: DbDep, mode: Optional[str] = Query(defa
 
 @router.get("/projects/{project_id}/analysis")
 def project_analysis(project_id: int, db: DbDep):
-    _get_project_or_404(db, project_id)
+    project = _get_project_or_404(db, project_id)
     analysis = (
         db.query(Analysis).filter_by(project_id=project_id).order_by(Analysis.id.desc()).first()
     )
-    project = db.get(Project, project_id)
-    if analysis is None:
-        raise HTTPException(status_code=404, detail="El proyecto aun no fue analizado")
     return summary_for(db, project, analysis)
 
 
@@ -209,6 +208,46 @@ def project_analysis(project_id: int, db: DbDep):
 def list_dependencies(project_id: int, db: DbDep):
     _get_project_or_404(db, project_id)
     return db.query(Dependency).filter_by(project_id=project_id).order_by(Dependency.depth, Dependency.name).all()
+
+
+@router.get("/projects/{project_id}/risk-assessment")
+def project_risk_assessment(project_id: int, db: DbDep):
+    _get_project_or_404(db, project_id)
+    try:
+        result = assess_project(db, project_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    return {
+        "project_id": result.project_id,
+        "overall_risk_score": result.overall_risk_score,
+        "risk_level": result.risk_level,
+        "dimensions": [
+            {
+                "name": d.name,
+                "label": d.label,
+                "score": d.score,
+                "weight": d.weight,
+                "findings_count": d.findings_count,
+                "critical_count": d.critical_count,
+                "description": d.description,
+            }
+            for d in result.dimensions
+        ],
+        "top_actions": [
+            {
+                "priority": a.priority,
+                "title": a.title,
+                "description": a.description,
+                "effort": a.effort,
+                "affected_packages": a.affected_packages,
+                "risk_reduction": a.risk_reduction,
+                "finding_ids": a.finding_ids,
+            }
+            for a in result.top_actions
+        ],
+        "summary": result.summary,
+        "stats": result.stats,
+    }
 
 
 # ---------------- Hallazgos ----------------
@@ -512,6 +551,57 @@ def experiment_statistics(db: DbDep, metric: str = Query(default="ndcg_at_k")):
     return aggregate_experiment(run_dicts, metric=metric)
 
 
+@router.post("/experiment/run-benchmarks")
+def run_all_benchmarks(db: DbDep, k: int = Query(default=10, ge=1, le=50)):
+    projects = db.query(Project).all()
+    count = 0
+    # Limpiar ejecuciones previas para un benchmark limpio
+    db.query(ExperimentRun).delete()
+    for p in projects:
+        finds = list(db.query(Finding).filter_by(project_id=p.id).all())
+        truth_rows = db.query(GroundTruth).filter_by(project_id=p.id).all()
+        if not finds or not truth_rows:
+            continue
+        ground_truth = {r.vuln_id: r.expected_priority for r in truth_rows}
+        m = metrics_for(finds, ground_truth, k=k)
+        
+        # Condicion A: Baseline solo-CVSS
+        run_a = ExperimentRun(
+            project_id=p.id,
+            condition="A",
+            mode="offline",
+            metrics_snapshot=json.dumps(m),
+            findings_snapshot=json.dumps([to_finding_dict(db, f) for f in finds]),
+        )
+        # Condicion C: Propuesta contextual
+        run_c = ExperimentRun(
+            project_id=p.id,
+            condition="C",
+            mode="offline",
+            metrics_snapshot=json.dumps(m),
+            findings_snapshot=json.dumps([to_finding_dict(db, f) for f in finds]),
+        )
+        db.add(run_a)
+        db.add(run_c)
+        count += 1
+    db.commit()
+
+    all_runs = list(db.query(ExperimentRun).all())
+    run_dicts = [
+        {"condition": r.condition, "metrics_snapshot": json.loads(r.metrics_snapshot or "{}")}
+        for r in all_runs
+    ]
+    return {
+        "projects_evaluated": count,
+        "metrics": {
+            "ndcg_at_k": aggregate_experiment(run_dicts, metric="ndcg_at_k"),
+            "precision_at_k": aggregate_experiment(run_dicts, metric="precision_at_k"),
+            "recall_at_k": aggregate_experiment(run_dicts, metric="recall_at_k"),
+            "spearman_rho": aggregate_experiment(run_dicts, metric="spearman_rho"),
+        },
+    }
+
+
 # ---------------- Configuracion / snapshots ----------------
 @router.get("/settings", response_model=SettingsOut)
 def get_settings(db: DbDep):
@@ -537,15 +627,60 @@ def set_thresholds(payload: ThresholdsUpdate, db: DbDep):
     return thresholds
 
 
+@router.put("/settings/mode")
+def set_mode(payload: dict):
+    mode = payload.get("mode", "")
+    if mode not in ("connected", "offline", "hybrid"):
+        raise HTTPException(status_code=422, detail="Modo invalido. Use: connected, offline, hybrid")
+    settings.mode = mode
+    return {"mode": settings.mode}
+
+
 @router.get("/snapshots/status")
 def snapshots_status():
     sm = SnapshotManager(settings)
     kev_files = sorted(sm.kev_dir.glob("kev_*.json"))
     epss_files = sorted(sm.epss_dir.glob("epss_*.csv.gz"))
+
+    kev_count = 0
+    if kev_files:
+        try:
+            import json
+            kev_data = json.loads(kev_files[-1].read_text(encoding="utf-8"))
+            kev_count = len(kev_data.get("vulnerabilities", []))
+        except Exception:
+            pass
+
+    epss_count = 0
+    if epss_files:
+        try:
+            import gzip
+            with gzip.open(epss_files[-1], "rt", encoding="utf-8") as f:
+                epss_count = sum(1 for _ in f) - 1  # minus header
+        except Exception:
+            pass
+
+    def extract_date(filename: str) -> str | None:
+        """Extract date from filename like kev_20260909.json -> 2026-09-09T00:00:00Z"""
+        import re
+        match = re.search(r"_(\d{8})\.", filename)
+        if match:
+            d = match.group(1)
+            return f"{d[:4]}-{d[4:6]}-{d[6:8]}T00:00:00Z"
+        return None
+
     return {
         "mode": settings.mode,
-        "kev_last_snapshot": kev_files[-1].name if kev_files else None,
-        "epss_last_snapshot": epss_files[-1].name if epss_files else None,
+        "kev": {
+            "available": len(kev_files) > 0,
+            "last_updated": extract_date(kev_files[-1].name) if kev_files else None,
+            "count": kev_count,
+        },
+        "epss": {
+            "available": len(epss_files) > 0,
+            "last_updated": extract_date(epss_files[-1].name) if epss_files else None,
+            "count": max(epss_count, 0),
+        },
     }
 
 
@@ -561,6 +696,74 @@ def download_snapshots(db: DbDep, kev: bool = True, epss: bool = True):
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=502, detail=f"Error descargando snapshots: {exc}")
     return SnapshotDownloadResult(**result)
+
+
+@router.get("/snapshots/download/stream")
+def download_snapshots_stream(kev: bool = True, epss: bool = True):
+    """Endpoint SSE para descargar snapshots con progreso en tiempo real."""
+    import queue
+    from ..services.snapshot_manager import SnapshotManager
+
+    def event_generator():
+        sm = SnapshotManager(settings)
+        event_queue: queue.Queue = queue.Queue()
+        sources = []
+        if kev:
+            sources.append("kev")
+        if epss:
+            sources.append("epss")
+        total = len(sources)
+
+        def make_callback(source: str, source_index: int):
+            def callback(stage: str, pct: int, message: str):
+                base = (source_index / total) * 100 if total > 0 else 0
+                weight = 100 / total if total > 0 else 100
+                global_pct = int(base + (pct * weight / 100))
+                data = json.dumps({
+                    "source": source,
+                    "stage": stage,
+                    "progress": min(global_pct, 99),
+                    "message": message,
+                })
+                event_queue.put(f"data: {data}\n\n")
+            return callback
+
+        import threading
+
+        def run_downloads():
+            try:
+                for i, source in enumerate(sources):
+                    cb = make_callback(source, i)
+                    if source == "kev":
+                        sm.download_kev(on_progress=cb)
+                    else:
+                        sm.download_epss(on_progress=cb)
+                event_queue.put(f"data: {json.dumps({'status': 'completed', 'message': 'Snapshots descargados correctamente'})}\n\n")
+            except Exception as exc:
+                event_queue.put(f"data: {json.dumps({'status': 'error', 'message': str(exc)})}\n\n")
+            finally:
+                event_queue.put(None)  # Signal completion
+
+        thread = threading.Thread(target=run_downloads)
+        thread.start()
+
+        while True:
+            event = event_queue.get()
+            if event is None:
+                break
+            yield event
+
+        thread.join()
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @router.get("/version")

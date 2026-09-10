@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useWeights } from '@/hooks/useApi';
-import { Save, RotateCcw } from 'lucide-react';
+import { api } from '@/lib/api';
+import { Save, RotateCcw, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 
 const defaultWeights = {
   cvss: 20,
@@ -20,25 +21,46 @@ const defaultWeights = {
 };
 
 const weightLabels: Record<keyof typeof defaultWeights, { label: string; description: string }> = {
-  cvss: { label: 'CVSS', description: 'Severidad técnica (0-100)' },
-  kev: { label: 'KEV', description: 'Explotación activa (0 o 100)' },
-  epss: { label: 'EPSS', description: 'Probabilidad de explotación (0-100)' },
-  exposure: { label: 'Exposición', description: 'Expuesto a Internet (0-100)' },
-  environment: { label: 'Entorno', description: 'Producción/Staging/Desarrollo (0-100)' },
+  cvss: { label: 'CVSS', description: 'Severidad tecnica (0-100)' },
+  kev: { label: 'KEV', description: 'Explotacion activa (0 o 100)' },
+  epss: { label: 'EPSS', description: 'Probabilidad de explotacion (0-100)' },
+  exposure: { label: 'Exposicion', description: 'Expuesto a Internet (0-100)' },
+  environment: { label: 'Entorno', description: 'Produccion/Staging/Desarrollo (0-100)' },
   dependency: { label: 'Alcance', description: 'Dependencia directa/transitiva (0-100)' },
   data_criticality: { label: 'Criticidad', description: 'Criticidad de datos tratados (0-100)' },
-  remediation: { label: 'Remediación', description: 'Disponibilidad de parche (0-100)' },
+  remediation: { label: 'Remediacion', description: 'Disponibilidad de parche (0-100)' },
 };
 
-export function SettingsView() {
+const MODE_OPTIONS = [
+  { value: 'connected', label: 'Conectado', description: 'Consulta OSV/NVD en tiempo real', icon: Wifi, color: 'text-green-500' },
+  { value: 'offline', label: 'Offline', description: 'Solo snapshots locales, sin red', icon: WifiOff, color: 'text-yellow-500' },
+  { value: 'hybrid', label: 'Hibrido', description: 'Consulta y guarda para offline', icon: RefreshCw, color: 'text-blue-500' },
+];
+
+interface SettingsViewProps {
+  onModeChange?: () => void;
+}
+
+export function SettingsView({ onModeChange }: SettingsViewProps) {
   const { weights, updateWeights } = useWeights();
   const [localWeights, setLocalWeights] = React.useState(defaultWeights);
   const [saving, setSaving] = React.useState(false);
+  const [mode, setMode] = React.useState('offline');
+  const [modeSaving, setModeSaving] = React.useState(false);
 
   React.useEffect(() => {
     if (weights) {
       setLocalWeights(weights);
     }
+    const fetchMode = async () => {
+      try {
+        const settings = await api.getSettings();
+        setMode(settings.mode);
+      } catch {
+        // keep default
+      }
+    };
+    fetchMode();
   }, [weights]);
 
   const total = Object.values(localWeights).reduce((sum, v) => sum + v, 0);
@@ -53,6 +75,19 @@ export function SettingsView() {
     setSaving(false);
   };
 
+  const handleModeChange = async (newMode: string) => {
+    setModeSaving(true);
+    try {
+      await api.updateMode(newMode);
+      setMode(newMode);
+      onModeChange?.();
+    } catch (err) {
+      console.error('Failed to update mode:', err);
+    } finally {
+      setModeSaving(false);
+    }
+  };
+
   const handleReset = () => {
     setLocalWeights(defaultWeights);
   };
@@ -60,7 +95,7 @@ export function SettingsView() {
   return (
     <div className="flex flex-col h-full">
       <Header
-        title="Configuración del modelo"
+        title="Configuracion del modelo"
         description="Pesos del modelo P_v = wC*C + wK*K + wE*E + wX*X + wA*A + wD*D + wI*I + wR*R"
       >
         <Button variant="outline" onClick={handleReset}>
@@ -74,6 +109,47 @@ export function SettingsView() {
       </Header>
 
       <div className="flex-1 overflow-auto p-4 space-y-6">
+        {/* Mode Selection */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Modo de operacion</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Define como se consultan las vulnerabilidades. El modo se aplica por defecto a todos los proyectos.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {MODE_OPTIONS.map((opt) => {
+                const Icon = opt.icon;
+                const isSelected = mode === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => handleModeChange(opt.value)}
+                    disabled={modeSaving}
+                    className={`p-4 rounded-lg border-2 text-left transition-all ${
+                      isSelected
+                        ? 'border-primary bg-primary/5'
+                        : 'border-muted hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon className={`w-5 h-5 ${isSelected ? opt.color : 'text-muted-foreground'}`} />
+                      <span className="font-medium">{opt.label}</span>
+                      {isSelected && (
+                        <span className="ml-auto text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                          Activo
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{opt.description}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Total Indicator */}
         <Card className={total !== 100 ? 'border-yellow-500/50' : 'border-green-500/50'}>
           <CardContent className="p-4">
@@ -125,7 +201,7 @@ export function SettingsView() {
         {/* Formula Preview */}
         <Card>
           <CardHeader>
-            <CardTitle>Fórmula de priorización</CardTitle>
+            <CardTitle>Formula de priorizacion</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="font-mono text-sm bg-muted p-4 rounded-lg">
@@ -139,7 +215,7 @@ export function SettingsView() {
                 <li>C = severidad CVSS normalizada (0-1)</li>
                 <li>K = evidencia KEV (0 o 1)</li>
                 <li>E = EPSS normalizado (0-1)</li>
-                <li>X = exposición del componente (0-1)</li>
+                <li>X = exposicion del componente (0-1)</li>
                 <li>A = entorno o ambiente (0-1)</li>
                 <li>D = tipo/profundidad de dependencia (0-1)</li>
                 <li>I = criticidad de datos (0-1)</li>

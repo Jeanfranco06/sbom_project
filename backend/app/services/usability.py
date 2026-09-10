@@ -40,14 +40,27 @@ def mean(values: list[float]) -> float:
 def _baseline_card(f: Finding) -> dict:
     """Tarjeta de alerta para la condicion A (solo datos tradicionales)."""
     return {
+        "id": f.id,
+        "vuln_id": f.vuln_id,
         "alert_type": "condition_A",
         "cve_id": f.vuln_id,
-        "package": f.dependency.name,
-        "version": f.dependency.version,
+        "package": f.dependency.name if f.dependency else "",
+        "version": f.dependency.version if f.dependency else "",
         "cvss_score": f.cvss_score,
         "cvss_severity": f.cvss_severity,
+        "priority_score": f.priority_score,
         "priority_label": f.priority_label,
-        "is_direct": f.dependency.is_direct,
+        "is_direct": f.dependency.is_direct if f.dependency else True,
+        "summary": f.summary,
+        "details": f.details,
+        "source": f.source,
+        "is_kev": f.is_kev,
+        "patch_available": f.patch_available,
+        "dependency": {
+            "name": f.dependency.name,
+            "version": f.dependency.version,
+            "is_direct": f.dependency.is_direct,
+        } if f.dependency else None,
     }
 
 
@@ -56,15 +69,29 @@ def _explicable_card(f: Finding) -> dict:
     expl = json.loads(f.explanation or "{}")
     rules = json.loads(f.rules_applied or "[]")
     return {
+        "id": f.id,
+        "vuln_id": f.vuln_id,
         "alert_type": "condition_D",
         "cve_id": f.vuln_id,
-        "package": f.dependency.name,
-        "version": f.dependency.version,
+        "package": f.dependency.name if f.dependency else "",
+        "version": f.dependency.version if f.dependency else "",
         "cvss_score": f.cvss_score,
         "cvss_severity": f.cvss_severity,
         "priority_score": f.priority_score,
         "priority_label": f.priority_label,
-        "is_direct": f.dependency.is_direct,
+        "is_direct": f.dependency.is_direct if f.dependency else True,
+        "summary": f.summary,
+        "details": f.details,
+        "source": f.source,
+        "is_kev": f.is_kev,
+        "patch_available": f.patch_available,
+        "explanation": f.explanation,
+        "rules_applied": f.rules_applied,
+        "dependency": {
+            "name": f.dependency.name,
+            "version": f.dependency.version,
+            "is_direct": f.dependency.is_direct,
+        } if f.dependency else None,
         "elements": {
             "evidence": expl.get("evidence", []),
             "factors": expl.get("factors", []),
@@ -122,6 +149,27 @@ def experience_summary(trials: list[UsabilityTrial]) -> dict:
             "sus_score_mean": mean(sus.get(cond, [])),
             "usefulness_mean": mean(use.get(cond, [])),
         }
+
+    cond_a = result["conditions"].get("A")
+    cond_d = result["conditions"].get("D")
+    result["condition_a"] = {
+        "avg_time": cond_a["triage_seconds"]["mean"],
+        "accuracy": cond_a["decision_correct_rate"],
+        "count": cond_a["n_trials"],
+    } if cond_a else {
+        "avg_time": 0.0,
+        "accuracy": 0.0,
+        "count": 0,
+    }
+    result["condition_d"] = {
+        "avg_time": cond_d["triage_seconds"]["mean"],
+        "accuracy": cond_d["decision_correct_rate"],
+        "count": cond_d["n_trials"],
+    } if cond_d else {
+        "avg_time": 0.0,
+        "accuracy": 0.0,
+        "count": 0,
+    }
 
     if "A" in result["conditions"] and "D" in result["conditions"]:
         t_a = mean(by_condition["A"])

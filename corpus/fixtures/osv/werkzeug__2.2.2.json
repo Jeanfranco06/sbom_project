@@ -196,13 +196,13 @@
         "CGA-jv2v-w8c5-pw44"
       ],
       "database_specific": {
+        "github_reviewed_at": "2024-05-06T14:21:27Z",
         "github_reviewed": true,
         "nvd_published_at": "2024-05-06T15:15:23Z",
         "severity": "HIGH",
         "cwe_ids": [
           "CWE-352"
-        ],
-        "github_reviewed_at": "2024-05-06T14:21:27Z"
+        ]
       },
       "references": [
         {
@@ -561,13 +561,13 @@
         "CGA-67rq-wq88-mqrf"
       ],
       "database_specific": {
-        "github_reviewed": true,
-        "nvd_published_at": "2024-10-25T20:15:04Z",
-        "severity": "MODERATE",
         "cwe_ids": [
           "CWE-22"
         ],
-        "github_reviewed_at": "2024-10-25T19:43:41Z"
+        "github_reviewed_at": "2024-10-25T19:43:41Z",
+        "github_reviewed": true,
+        "nvd_published_at": "2024-10-25T20:15:04Z",
+        "severity": "MODERATE"
       },
       "references": [
         {
@@ -741,13 +741,13 @@
         "CGA-8wr4-34cx-82j9"
       ],
       "database_specific": {
-        "github_reviewed": true,
-        "nvd_published_at": "2025-11-29T03:16:00Z",
         "severity": "MODERATE",
         "cwe_ids": [
           "CWE-67"
         ],
-        "github_reviewed_at": "2025-12-02T00:27:38Z"
+        "github_reviewed_at": "2025-12-02T00:27:38Z",
+        "github_reviewed": true,
+        "nvd_published_at": "2025-11-29T03:16:00Z"
       },
       "references": [
         {
@@ -1068,13 +1068,13 @@
         "CGA-hxg5-68pj-fgqr"
       ],
       "database_specific": {
+        "github_reviewed_at": "2023-02-15T15:37:03Z",
         "github_reviewed": true,
         "nvd_published_at": "2023-02-14T20:15:00Z",
         "severity": "LOW",
         "cwe_ids": [
           "CWE-20"
-        ],
-        "github_reviewed_at": "2023-02-15T15:37:03Z"
+        ]
       },
       "references": [
         {
@@ -1341,8 +1341,8 @@
             "3.0.5"
           ],
           "database_specific": {
-            "last_known_affected_version_range": "<= 3.0.5",
-            "source": "https://github.com/github/advisory-database/blob/main/advisories/github-reviewed/2024/10/GHSA-q34m-jh98-gwm2/GHSA-q34m-jh98-gwm2.json"
+            "source": "https://github.com/github/advisory-database/blob/main/advisories/github-reviewed/2024/10/GHSA-q34m-jh98-gwm2/GHSA-q34m-jh98-gwm2.json",
+            "last_known_affected_version_range": "<= 3.0.5"
           }
         },
         {
@@ -1461,14 +1461,14 @@
         "CGA-75jp-v7vc-4hxj"
       ],
       "database_specific": {
-        "github_reviewed": true,
-        "nvd_published_at": "2023-02-14T20:15:00Z",
-        "severity": "HIGH",
         "cwe_ids": [
           "CWE-400",
           "CWE-770"
         ],
-        "github_reviewed_at": "2023-02-15T15:36:26Z"
+        "github_reviewed_at": "2023-02-15T15:36:26Z",
+        "github_reviewed": true,
+        "nvd_published_at": "2023-02-14T20:15:00Z",
+        "severity": "HIGH"
       },
       "references": [
         {

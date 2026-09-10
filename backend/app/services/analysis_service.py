@@ -117,10 +117,10 @@ class AnalysisService:
             for dep in dep_map.values():
                 if not dep.version or dep.version == "0.0":
                     continue
-                vulns = self.correlator.correlate(dep.name, dep.version, dep.ecosystem)
+                vulns = self.correlator.correlate(dep.name, dep.version, dep.ecosystem, mode=analysis.mode)
                 best: dict[str, tuple[Dependency, dict]] = {}
                 for raw in vulns:
-                    candidate = self.enrichment.enrich(raw)
+                    candidate = self.enrichment.enrich(raw, mode=analysis.mode)
                     if not candidate.get("vuln_id"):
                         continue
                     key = candidate["cves"][0] if candidate.get("cves") else candidate["vuln_id"]
@@ -217,9 +217,11 @@ def to_finding_dict(db: Session, finding: Finding, extra_weights: dict | None = 
         "is_dev": dep.is_dev,
         "depth": dep.depth,
         "purl": dep.purl,
+        "ecosystem": dep.ecosystem,
         "vuln_id": finding.vuln_id,
         "source": finding.source,
         "summary": finding.summary,
+        "details": finding.details,
         "aliases": json.loads(finding.aliases or "[]"),
         "cvss_score": finding.cvss_score,
         "cvss_severity": finding.cvss_severity,
@@ -227,6 +229,7 @@ def to_finding_dict(db: Session, finding: Finding, extra_weights: dict | None = 
         "is_kev": finding.is_kev,
         "patch_available": finding.patch_available,
         "fixed_versions": json.loads(finding.fixed_versions or "[]"),
+        "introduced_versions": json.loads(finding.introduced_versions or "[]"),
         "priority_score": finding.priority_score,
         "priority_label": finding.priority_label,
         "explanation": json.loads(finding.explanation or "{}"),
@@ -235,7 +238,7 @@ def to_finding_dict(db: Session, finding: Finding, extra_weights: dict | None = 
     }
 
 
-def summary_for(db: Session, project: Project, analysis: Analysis) -> dict:
+def summary_for(db: Session, project: Project, analysis: Analysis | None) -> dict:
     deps = db.query(Dependency).filter_by(project_id=project.id).all()
     findings = db.query(Finding).filter_by(project_id=project.id).all()
     by_priority: dict[str, int] = {}
@@ -264,7 +267,9 @@ def summary_for(db: Session, project: Project, analysis: Analysis) -> dict:
             "status": analysis.status,
             "error": analysis.error,
             "created_at": analysis.created_at.isoformat() if analysis.created_at else None,
-        },
+        }
+        if analysis
+        else None,
         "dependency_count": len(deps),
         "direct_count": sum(1 for d in deps if d.is_direct),
         "transitive_count": sum(1 for d in deps if not d.is_direct),

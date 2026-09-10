@@ -11,13 +11,13 @@
       "modified": "2024-10-18T22:22:56.958480Z",
       "published": "2018-07-12T20:29:26Z",
       "database_specific": {
-        "cwe_ids": [
-          "CWE-326"
-        ],
         "github_reviewed_at": "2020-06-16T21:18:02Z",
         "github_reviewed": true,
         "nvd_published_at": null,
-        "severity": "HIGH"
+        "severity": "HIGH",
+        "cwe_ids": [
+          "CWE-326"
+        ]
       },
       "references": [
         {
@@ -124,13 +124,13 @@
       "modified": "2024-10-18T22:23:12.251504Z",
       "published": "2018-12-14T18:51:38Z",
       "database_specific": {
+        "severity": "CRITICAL",
         "cwe_ids": [
           "CWE-119"
         ],
         "github_reviewed_at": "2020-06-16T21:32:15Z",
         "github_reviewed": true,
-        "nvd_published_at": null,
-        "severity": "CRITICAL"
+        "nvd_published_at": null
       },
       "references": [
         {

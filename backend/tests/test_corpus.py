@@ -23,7 +23,7 @@ FIXTURES_DIR = CORPUS_DIR / "fixtures"
 
 VALID_ENV = {"production", "staging", "development"}
 VALID_CRIT = {"high", "medium", "low"}
-N_CASES = 16
+N_CASES = 24
 
 
 def _case_dirs() -> list[Path]:
@@ -47,7 +47,7 @@ def _fixture_vuln_ids(name: str, version: str) -> set[str]:
     return {v.get("id", "") for v in payload.get("vulns", []) or []}
 
 
-def test_corpus_tiene_12_casos():
+def test_corpus_tiene_24_casos():
     cases = _case_dirs()
     assert len(cases) == N_CASES, f"Se esperaban {N_CASES} casos, hay {len(cases)}"
 

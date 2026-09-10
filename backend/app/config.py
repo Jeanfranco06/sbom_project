@@ -23,7 +23,11 @@ class Settings:
     # Modo de operacion: connected | hybrid | offline
     mode: str = os.environ.get("SECSBOM_MODE", "connected")
     # Timeout HTTP para consultas a OSV / NVD
-    http_timeout: float = float(os.environ.get("SECSBOM_HTTP_TIMEOUT", "30"))
+    http_timeout: float = float(os.environ.get("SECSBOM_HTTP_TIMEOUT", "60"))
+    # Auto-descarga de snapshots KEV/EPSS al iniciar el servidor
+    auto_download_snapshots: bool = os.environ.get(
+        "SECSBOM_AUTO_DOWNLOAD", "true"
+    ).lower() in ("true", "1", "yes")
 
     # Pesos iniciales del modelo de priorizacion (suman 100). Se pueden calibrar y guardar via API.
     weights: dict = field(

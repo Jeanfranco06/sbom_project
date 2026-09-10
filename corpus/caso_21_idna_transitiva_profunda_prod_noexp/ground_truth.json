@@ -1,14 +1,14 @@
 {
   "project": {
     "name": "corpus-caso-21-idna-transitiva-profunda-prod-noexp",
-    "description": "Caso 21: dependencia transitiva profunda (depth=4), produccion, NO expuesto, con parche. Objetivo: idna 3.6 / CVE-2024-3651 (GHSA-pjwv-9gwv-v869, transitiva via corpus-http-client -> requests -> urllib3 -> idna).",
+    "description": "Caso 21: dependencia transitiva profunda (depth=4), produccion, NO expuesto, con parche. Objetivo: idna 3.6 / CVE-2024-3651 (GHSA-jjg7-2v4v-x38h, transitiva via corpus-http-client -> requests -> urllib3 -> idna).",
     "environment": "production",
     "internet_exposed": false,
     "data_criticality": "low"
   },
   "ground_truth": [
     {
-      "vuln_id": "GHSA-pjwv-9gwv-v869",
+      "vuln_id": "GHSA-jjg7-2v4v-x38h",
       "component": "idna",
       "installed_version": "3.6",
       "is_direct_dependency": false,

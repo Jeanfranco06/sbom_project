@@ -15,6 +15,7 @@ grafo, si pertenecen a desarrollo, su categoria y su ecosistema de paquetes
 from __future__ import annotations
 
 import json
+import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -23,7 +24,10 @@ from typing import Iterable
 try:
     import tomllib  # Python 3.11+
 except ModuleNotFoundError:  # pragma: no cover
-    tomllib = None  # type: ignore[assignment]
+    try:
+        import tomli as tomllib  # type: ignore[no-redef]
+    except ModuleNotFoundError:  # pragma: no cover
+        tomllib = None  # type: ignore[assignment]
 
 
 @dataclass
@@ -182,10 +186,10 @@ def parse_poetry_lock(path: Path, direct_names: set[str]) -> list[ResolvedPackag
 
 def parse_pipfile_lock(path: Path, direct_names: set[str]) -> list[ResolvedPackage]:
     """Parsea Pipfile.lock con grafo de dependencias."""
-    if tomllib is None:
-        raise DependencyAnalysisError("Se requiere Python 3.11+ para leer Pipfile.lock")
-    with path.open("rb") as fh:
-        doc = tomllib.load(fh)
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8", errors="ignore"))
+    except json.JSONDecodeError as exc:
+        raise DependencyAnalysisError("No se pudo leer Pipfile.lock como JSON valido") from exc
 
     packages: dict[str, ResolvedPackage] = {}
     for category in ("default", "develop"):
@@ -378,6 +382,20 @@ def parse_package_lock_json(path: Path) -> list[ResolvedPackage]:
     return list(packages_dict.values())
 
 
+SKIP_DIRS = {"node_modules", ".venv", "venv", ".git", "__pycache__", ".tox", ".mypy_cache"}
+
+
+def _safe_rglob(root: Path, pattern: str):
+    """Busca archivos recursivamente sin entrar en directorios pesados (node_modules, .venv, etc.)."""
+    suffix = pattern[1:] if pattern.startswith("*") else None
+    for dirpath, dirnames, filenames in os.walk(root):
+        # Excluir directorios pesados in-place para que walk no los traverse
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+        for fname in filenames:
+            if fname == pattern or (suffix and fname.endswith(suffix)):
+                yield Path(dirpath) / fname
+
+
 def analyze_project_dir(project_path: str) -> tuple[list[ResolvedPackage], list[tuple[str, str]]]:
     """Analiza un directorio de forma recursiva y devuelve (paquetes resueltos, aristas del grafo)."""
     root = Path(project_path)
@@ -388,22 +406,16 @@ def analyze_project_dir(project_path: str) -> tuple[list[ResolvedPackage], list[
     lock_packages: list[ResolvedPackage] = []
     manifest_found = False
 
-    def skip(p: Path) -> bool:
-        return "node_modules" in p.parts or ".venv" in p.parts or "venv" in p.parts
-
     # 1. Dependencias directas (requirements.txt, pyproject.toml, Pipfile, .csproj)
-    for req_file in root.rglob("requirements.txt"):
-        if skip(req_file): continue
+    for req_file in _safe_rglob(root, "requirements.txt"):
         manifest_found = True
         direct_only.extend(parse_requirements(req_file.read_text(encoding="utf-8", errors="ignore").splitlines()))
 
-    for pyproject in root.rglob("pyproject.toml"):
-        if skip(pyproject): continue
+    for pyproject in _safe_rglob(root, "pyproject.toml"):
         manifest_found = True
         direct_only.extend(parse_pyproject(pyproject.read_bytes(), source_name=pyproject.name))
 
-    for pipfile in root.rglob("Pipfile"):
-        if skip(pipfile): continue
+    for pipfile in _safe_rglob(root, "Pipfile"):
         manifest_found = True
         try:
             doc = tomllib.loads(pipfile.read_text(encoding="utf-8", errors="ignore"))
@@ -415,47 +427,47 @@ def analyze_project_dir(project_path: str) -> tuple[list[ResolvedPackage], list[
         except Exception:
             pass
 
-    for csproj_file in root.rglob("*.csproj"):
-        if skip(csproj_file): continue
+    for csproj_file in _safe_rglob(root, "*.csproj"):
         manifest_found = True
         direct_only.extend(parse_csproj(csproj_file.read_bytes(), source_name=csproj_file.name))
 
     # 2. Lockfiles (poetry.lock, Pipfile.lock, packages.lock.json, package-lock.json)
     direct_names = {normalize_name(p.name) for p in direct_only}
 
-    for lock in root.rglob("poetry.lock"):
-        if skip(lock): continue
+    for lock in _safe_rglob(root, "poetry.lock"):
         manifest_found = True
         lock_packages.extend(parse_poetry_lock(lock, direct_names))
 
-    for lock in root.rglob("Pipfile.lock"):
-        if skip(lock): continue
+    for lock in _safe_rglob(root, "Pipfile.lock"):
         manifest_found = True
         lock_packages.extend(parse_pipfile_lock(lock, direct_names))
 
-    for lock in root.rglob("packages.lock.json"):
-        if skip(lock): continue
+    for lock in _safe_rglob(root, "packages.lock.json"):
         manifest_found = True
         lock_packages.extend(parse_packages_lock_json(lock))
 
-    for lock in root.rglob("package-lock.json"):
-        if skip(lock): continue
+    for lock in _safe_rglob(root, "package-lock.json"):
         manifest_found = True
         lock_packages.extend(parse_package_lock_json(lock))
 
-    for lock in root.rglob("composer.lock"):
-        if skip(lock): continue
+    for lock in _safe_rglob(root, "composer.lock"):
         manifest_found = True
         lock_packages.extend(parse_composer_lock(lock))
 
     if not manifest_found:
         raise DependencyAnalysisError(
-            "No se encontraron archivos de dependencias en el proyecto "
-            "(requirements.txt, pyproject.toml, poetry.lock, Pipfile.lock, package-lock.json, etc.)."
+            "No se encontraron archivos de dependencias en el proyecto. "
+            "Formatos soportados: requirements.txt, pyproject.toml, Pipfile (Python), "
+            "package-lock.json (JavaScript/Node.js), *.csproj, packages.lock.json (.NET), "
+            "composer.lock (PHP)."
         )
 
-    # 3. Combinar paquetes
-    by_name = {p.name: p for p in lock_packages}
+    # 3. Combinar paquetes (deduplicar por nombre)
+    by_name: dict[str, ResolvedPackage] = {}
+    for p in lock_packages:
+        existing = by_name.get(p.name)
+        if existing is None:
+            by_name[p.name] = p
     for d in direct_only:
         resolved = by_name.get(d.name)
         if resolved:
@@ -464,7 +476,7 @@ def analyze_project_dir(project_path: str) -> tuple[list[ResolvedPackage], list[
                 resolved.is_dev = True
                 resolved.category = "dev"
         else:
-            lock_packages.append(d)
+            by_name[d.name] = d
 
-    packages, edges = _resolve_depths(lock_packages)
+    packages, edges = _resolve_depths(list(by_name.values()))
     return packages, edges

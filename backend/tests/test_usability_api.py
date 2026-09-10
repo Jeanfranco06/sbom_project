@@ -54,3 +54,12 @@ def test_statistics_triage_seconds_pairs_a_d():
     assert cmp["baseline_mean"] == 120.0
     assert cmp["contextual_mean"] == 45.0
     assert cmp["improvement"] < 0  # D (menor tiempo) es mejor que A
+
+
+def test_run_all_benchmarks():
+    r = client.post("/api/experiment/run-benchmarks")
+    assert r.status_code == 200
+    data = r.json()
+    assert "projects_evaluated" in data
+    assert "metrics" in data
+    assert "ndcg_at_k" in data["metrics"]

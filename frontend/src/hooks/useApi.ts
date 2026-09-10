@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
-import type { Project, Finding, Analysis, GraphData, Metrics, Weights } from '@/types';
+import type { Project, Finding, Analysis, AnalysisSummary, GraphData, Metrics, Weights } from '@/types';
 
 export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -99,6 +99,7 @@ export function useFindings(
 
 export function useAnalysis(projectId: number | null) {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [summary, setSummary] = useState<AnalysisSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -112,10 +113,22 @@ export function useAnalysis(projectId: number | null) {
       try {
         setLoading(true);
         const data = await api.getAnalysis(projectId);
-        setAnalysis(data);
+        if (data && typeof data === 'object' && 'analysis' in data) {
+          setSummary(data);
+          setAnalysis(data.analysis);
+        } else {
+          setAnalysis(data as unknown as Analysis);
+        }
         setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error fetching analysis');
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        if (message.includes('404')) {
+          setAnalysis(null);
+          setSummary(null);
+          setError(null);
+        } else {
+          setError(message || 'Error fetching analysis');
+        }
       } finally {
         setLoading(false);
       }
@@ -129,7 +142,10 @@ export function useAnalysis(projectId: number | null) {
     try {
       setLoading(true);
       const data = await api.analyzeProject(projectId, mode);
-      setAnalysis(data);
+      const analysisData = (data as unknown as Record<string, unknown>)?.analysis !== undefined
+        ? (data as unknown as { analysis: Analysis | null }).analysis
+        : (data as unknown as Analysis);
+      setAnalysis(analysisData || null);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error analyzing project');
@@ -138,7 +154,7 @@ export function useAnalysis(projectId: number | null) {
     }
   };
 
-  return { analysis, loading, error, analyze };
+  return { analysis, summary, loading, error, analyze };
 }
 
 export function useGraph(projectId: number | null) {
@@ -146,29 +162,29 @@ export function useGraph(projectId: number | null) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchGraph = useCallback(async () => {
     if (!projectId) {
       setLoading(false);
       return;
     }
 
-    const fetchGraph = async () => {
-      try {
-        setLoading(true);
-        const data = await api.getGraph(projectId);
-        setGraph(data);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error fetching graph');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGraph();
+    try {
+      setLoading(true);
+      const data = await api.getGraph(projectId);
+      setGraph(data);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error fetching graph');
+    } finally {
+      setLoading(false);
+    }
   }, [projectId]);
 
-  return { graph, loading, error };
+  useEffect(() => {
+    fetchGraph();
+  }, [fetchGraph]);
+
+  return { graph, loading, error, refetch: fetchGraph };
 }
 
 export function useMetrics(projectId: number | null, k: number = 10) {
@@ -176,29 +192,29 @@ export function useMetrics(projectId: number | null, k: number = 10) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchMetrics = useCallback(async () => {
     if (!projectId) {
       setLoading(false);
       return;
     }
 
-    const fetchMetrics = async () => {
-      try {
-        setLoading(true);
-        const data = await api.getMetrics(projectId, k);
-        setMetrics(data);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error fetching metrics');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMetrics();
+    try {
+      setLoading(true);
+      const data = await api.getMetrics(projectId, k);
+      setMetrics(data);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error fetching metrics');
+    } finally {
+      setLoading(false);
+    }
   }, [projectId, k]);
 
-  return { metrics, loading, error };
+  useEffect(() => {
+    fetchMetrics();
+  }, [fetchMetrics]);
+
+  return { metrics, loading, error, refetch: fetchMetrics };
 }
 
 export function useWeights() {
@@ -211,7 +227,7 @@ export function useWeights() {
       try {
         setLoading(true);
         const data = await api.getSettings();
-        setWeights(data);
+        setWeights(data.weights);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error fetching weights');

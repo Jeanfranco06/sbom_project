@@ -74,6 +74,7 @@ def build_explanation(
     notes = build_explanation_annotations(None, project, dep, candidate, values)
 
     recommendation = _recommendation(dep, candidate, label)
+    risk_impact = _risk_impact(project, dep, candidate, label)
 
     return {
         "component": {"name": dep.name, "version": dep.version or "desconocida"},
@@ -88,6 +89,7 @@ def build_explanation(
         "factors": factors,
         "rules_applied": rules,
         "remediation": recommendation,
+        "risk_impact": risk_impact,
         "evidence": _evidence(candidate),
     }
 
@@ -136,3 +138,107 @@ def _recommendation(dep: Dependency, candidate: dict, label: str) -> str:
     if label in ("critical", "high"):
         return f"Sin parche publicado para {dep.name}. Evaluar mitigaciones compensatorias (aislar, restringir accesos) o sustituir el componente."
     return f"Riesgo menor en {dep.name}. Documentar y monitorear; actualizar cuando haya version corregida."
+
+
+def _risk_impact(project: Project, dep: Dependency, candidate: dict, label: str) -> dict:
+    """Genera analisis de impacto de riesgo contextualizado para el hallazgo."""
+    cvss_vector = candidate.get("cvss_vector") or {}
+    is_direct = dep.is_direct
+    is_dev = dep.is_dev
+    env = project.environment
+    exposed = project.internet_exposed
+    data_crit = project.data_criticality
+    is_kev = candidate.get("is_kev", False)
+    epss = candidate.get("epss_score")
+
+    # Triada CIA
+    cia = {
+        "confidentiality": cvss_vector.get("confidentiality", "desconocido"),
+        "integrity": cvss_vector.get("integrity", "desconocido"),
+        "availability": cvss_vector.get("availability", "desconocido"),
+    }
+
+    # Impacto en el negocio
+    business_impacts = []
+    if cia["confidentiality"] in ("alto", "completo"):
+        business_impacts.append("Riesgo de exposicion de datos sensibles o confidenciales")
+    if cia["integrity"] in ("alto", "completo"):
+        business_impacts.append("Riesgo de manipulacion o alteracion de datos")
+    if cia["availability"] in ("alto", "completo"):
+        business_impacts.append("Riesgo de indisponibilidad del servicio")
+
+    # Contexto de exposicion
+    exposure_context = []
+    if exposed and is_direct:
+        exposure_context.append("Componente directo en proyecto expuesto a Internet - alto riesgo de explotacion remota")
+    elif exposed:
+        exposure_context.append("Proyecto expuesto a Internet pero dependencia transitiva - riesgo moderado")
+    elif is_direct:
+        exposure_context.append("Componente directo en red interna - riesgo de escalamiento lateral")
+    else:
+        exposure_context.append("Dependencia transitiva en red interna - riesgo limitado")
+
+    # Probabilidad de explotacion
+    exploitation = []
+    if is_kev:
+        exploitation.append("EXPLTACION ACTIVA CONFIRMADA: Esta vulnerability esta siendo explotada en el mundo real (CISA KEV)")
+    if epss and epss > 0.1:
+        exploitation.append(f"Alta probabilidad de explotacion: EPSS {epss:.2%}")
+    elif epss and epss > 0.01:
+        exploitation.append(f"Probabilidad moderada de explotacion: EPSS {epss:.2%}")
+
+    # Nivel de riesgo combinado
+    risk_level = _calculate_risk_level(label, is_kev, exposed, is_direct, data_crit, env)
+
+    return {
+        "cia": cia,
+        "business_impacts": business_impacts,
+        "exposure_context": exposure_context,
+        "exploitation": exploitation,
+        "risk_level": risk_level,
+        "impact_summary": _impact_summary(cia, business_impacts, risk_level),
+    }
+
+
+def _calculate_risk_level(
+    label: str, is_kev: bool, exposed: bool, is_direct: bool, data_crit: str, env: str
+) -> str:
+    """Calcula nivel de riesgo combinado."""
+    score = 0
+    # Prioridad base
+    score += {"critical": 40, "high": 30, "medium": 20, "low": 10, "info": 5}.get(label, 0)
+    # KEV
+    if is_kev:
+        score += 25
+    # Exposicion
+    if exposed:
+        score += 15
+    # Dependencia directa
+    if is_direct:
+        score += 10
+    # Criticidad de datos
+    score += {"high": 10, "medium": 5, "low": 0}.get(data_crit, 0)
+    # Entorno
+    score += {"production": 10, "staging": 5, "development": 0}.get(env, 0)
+
+    if score >= 70:
+        return "critico"
+    if score >= 50:
+        return "alto"
+    if score >= 30:
+        return "moderado"
+    return "bajo"
+
+
+def _impact_summary(cia: dict, business_impacts: list[str], risk_level: str) -> str:
+    """Genera resumen del impacto."""
+    parts = []
+    if cia["confidentiality"] in ("alto", "completo"):
+        parts.append("confidencialidad")
+    if cia["integrity"] in ("alto", "completo"):
+        parts.append("integridad")
+    if cia["availability"] in ("alto", "completo"):
+        parts.append("disponibilidad")
+
+    dim_str = " y ".join(parts) if parts else "ninguna dimension critica"
+    return f"Riesgo {risk_level}. Impacto potencial en: {dim_str}."

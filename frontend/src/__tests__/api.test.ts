@@ -45,7 +45,7 @@ describe('API Client', () => {
     it('creates project with correct data', async () => {
       const newProject = {
         name: 'New Project',
-        source_type: 'local',
+        source_type: 'local' as const,
         path: '/path/to/project',
       };
 
@@ -103,6 +103,28 @@ describe('API Client', () => {
         '/api/projects/1/analyze?mode=offline',
         expect.objectContaining({ method: 'POST' })
       );
+    });
+  });
+
+  describe('getAnalysis', () => {
+    it('fetches project analysis summary', async () => {
+      const mockSummary = {
+        project: { id: 1, name: 'Test' },
+        analysis: { id: 1, status: 'done' },
+        dependency_count: 5,
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockSummary,
+      });
+
+      const result = await api.getAnalysis(1);
+
+      expect(result).toEqual(mockSummary);
+      expect(mockFetch).toHaveBeenCalledWith('/api/projects/1/analysis', {
+        headers: { 'Content-Type': 'application/json' },
+      });
     });
   });
 });

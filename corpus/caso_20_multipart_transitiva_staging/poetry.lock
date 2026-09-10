@@ -1,0 +1,31 @@
+[[package]]
+name = "corpus-fastapi-app"
+version = "1.0.0"
+category = "main"
+optional = false
+dependencies = { starlette = "*", atomicwrites = "*", platformdirs = "*" }
+
+[[package]]
+name = "starlette"
+version = "0.36.1"
+category = "main"
+optional = false
+dependencies = { python-multipart = "*" }
+
+[[package]]
+name = "python-multipart"
+version = "0.0.6"
+category = "main"
+optional = false
+
+[[package]]
+name = "atomicwrites"
+version = "1.4.1"
+category = "main"
+optional = false
+
+[[package]]
+name = "platformdirs"
+version = "4.2.2"
+category = "main"
+optional = false

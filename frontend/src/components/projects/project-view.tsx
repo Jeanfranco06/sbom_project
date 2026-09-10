@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FindingCard } from '@/components/findings/finding-card';
 import { DependencyGraph } from '@/components/findings/dependency-graph';
+import { RiskAssessmentPanel } from '@/components/projects/risk-assessment';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import {
   useProject,
@@ -25,6 +26,9 @@ import {
   CheckCircle,
   Clock,
   Shield,
+  Info,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 interface ProjectViewProps {
@@ -34,18 +38,44 @@ interface ProjectViewProps {
 
 export function ProjectView({ projectId, onBack }: ProjectViewProps) {
   const { project, loading: projectLoading } = useProject(projectId);
-  const { analyze, loading: analysisLoading } = useAnalysis(projectId);
+  const { analysis, analyze, loading: analysisLoading } = useAnalysis(projectId);
   const { findings, loading: findingsLoading, refetch: refetchFindings } = useFindings(projectId);
-  const { graph } = useGraph(projectId);
-  const { metrics } = useMetrics(projectId);
+  const { graph, refetch: refetchGraph } = useGraph(projectId);
+  const { metrics, refetch: refetchMetrics } = useMetrics(projectId);
 
   const [activeTab, setActiveTab] = React.useState('findings');
+  const [analysisMode, setAnalysisMode] = React.useState<string>('offline');
+  const [polling, setPolling] = React.useState(false);
+  const [page, setPage] = React.useState(1);
   const [filters, setFilters] = React.useState({
     priority: '',
     kev: false,
     direct: false,
     q: '',
   });
+
+  const PAGE_SIZE = 10;
+
+  const isAnalyzing = analysis?.status === 'running' || analysisLoading;
+
+  React.useEffect(() => {
+    if (!isAnalyzing || !polling) return;
+    const interval = setInterval(async () => {
+      await refetchFindings();
+      await refetchGraph();
+      await refetchMetrics();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [isAnalyzing, polling, refetchFindings, refetchGraph, refetchMetrics]);
+
+  React.useEffect(() => {
+    if (analysis?.status === 'done' || analysis?.status === 'error') {
+      setPolling(false);
+      refetchFindings();
+      refetchGraph();
+      refetchMetrics();
+    }
+  }, [analysis?.status, refetchFindings, refetchGraph, refetchMetrics]);
 
   const filteredFindings = React.useMemo(() => {
     return findings.filter((f) => {
@@ -69,14 +99,24 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
     const high = findings.filter((f) => f.priority_label === 'high').length;
     const medium = findings.filter((f) => f.priority_label === 'medium').length;
     const low = findings.filter((f) => f.priority_label === 'low').length;
+    const info = findings.filter((f) => f.priority_label === 'info').length;
     const kev = findings.filter((f) => f.is_kev).length;
 
-    return { critical, high, medium, low, kev };
+    return { critical, high, medium, low, info, kev };
   }, [findings]);
 
+  const totalPages = Math.ceil(filteredFindings.length / PAGE_SIZE);
+  const paginatedFindings = filteredFindings.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setPage(1);
+  }, [filters]);
+
   const handleAnalyze = async () => {
-    await analyze('offline');
-    refetchFindings();
+    setPolling(true);
+    await analyze(analysisMode);
+    setPolling(false);
   };
 
   const handleExport = async (format: 'json' | 'csv' | 'pdf') => {
@@ -122,9 +162,28 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Volver
         </Button>
-        <Button onClick={handleAnalyze} disabled={analysisLoading}>
-          <Play className="w-4 h-4 mr-2" />
-          {analysisLoading ? 'Analizando...' : 'Analizar ahora'}
+        <select
+          value={analysisMode}
+          onChange={(e) => setAnalysisMode(e.target.value)}
+          disabled={isAnalyzing}
+          className="px-3 py-1.5 rounded-md border bg-background text-sm"
+        >
+          <option value="offline">Offline</option>
+          <option value="connected">Connected</option>
+          <option value="hybrid">Hibrido</option>
+        </select>
+        <Button onClick={handleAnalyze} disabled={isAnalyzing}>
+          {isAnalyzing ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2" />
+              Analizando...
+            </>
+          ) : (
+            <>
+              <Play className="w-4 h-4 mr-2" />
+              Analizar
+            </>
+          )}
         </Button>
         <Button variant="outline" onClick={() => handleExport('json')}>
           <Download className="w-4 h-4 mr-2" />
@@ -142,9 +201,9 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
 
       <div className="flex-1 overflow-auto p-4 space-y-6">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
           <StatsCard
-            title="Críticas"
+            title="Criticas"
             value={stats.critical}
             icon={AlertTriangle}
             className="border-red-500/50"
@@ -168,10 +227,16 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
             className="border-green-500/50"
           />
           <StatsCard
+            title="Info"
+            value={stats.info}
+            icon={Info}
+            className="border-blue-500/50"
+          />
+          <StatsCard
             title="KEV"
             value={stats.kev}
             icon={Shield}
-            description="Explotación activa"
+            description="Explotacion activa"
             className="border-purple-500/50"
           />
         </div>
@@ -180,8 +245,9 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="findings">Hallazgos ({filteredFindings.length})</TabsTrigger>
+            <TabsTrigger value="risk">Evaluacion de Riesgo</TabsTrigger>
             <TabsTrigger value="graph">Grafo de Dependencias</TabsTrigger>
-            <TabsTrigger value="metrics">Métricas de Ranking</TabsTrigger>
+            <TabsTrigger value="metrics">Metricas de Ranking</TabsTrigger>
             <TabsTrigger value="sbom">SBOM</TabsTrigger>
           </TabsList>
 
@@ -194,10 +260,11 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
                 className="px-3 py-2 rounded-md border bg-background text-sm"
               >
                 <option value="">Toda prioridad</option>
-                <option value="critical">Crítica</option>
+                <option value="critical">Critica</option>
                 <option value="high">Alta</option>
                 <option value="medium">Media</option>
                 <option value="low">Baja</option>
+                <option value="info">Info</option>
               </select>
 
               <label className="flex items-center gap-2 text-sm">
@@ -248,18 +315,75 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
                   <h3 className="text-lg font-semibold mb-2">Sin hallazgos</h3>
                   <p className="text-muted-foreground">
                     {findings.length === 0
-                      ? 'Ejecuta un análisis para detectar vulnerabilidades.'
+                      ? 'Ejecuta un analisis para detectar vulnerabilidades.'
                       : 'No hay hallazgos que coincidan con los filtros.'}
                   </p>
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-4">
-                {filteredFindings.map((finding) => (
-                  <FindingCard key={finding.id} finding={finding} />
-                ))}
-              </div>
+              <>
+                <div className="space-y-4">
+                  {paginatedFindings.map((finding) => (
+                    <FindingCard key={finding.id} finding={finding} />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between pt-4">
+                    <p className="text-sm text-muted-foreground">
+                      Mostrando {(page - 1) * PAGE_SIZE + 1}-
+                      {Math.min(page * PAGE_SIZE, filteredFindings.length)} de{' '}
+                      {filteredFindings.length} hallazgos
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum: number;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (page <= 3) {
+                          pageNum = i + 1;
+                        } else if (page >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = page - 2 + i;
+                        }
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={page === pageNum ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setPage(pageNum)}
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
+          </TabsContent>
+
+          <TabsContent value="risk">
+            <RiskAssessmentPanel projectId={projectId} />
           </TabsContent>
 
           <TabsContent value="graph">
@@ -291,7 +415,7 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
                       <div>
                         <h4 className="font-medium mb-2">Precision@k</h4>
                         <div className="space-y-1">
-                          {metrics.precision_at_k.map((p, i) => (
+                          {metrics.precision_at_k?.map((p, i) => (
                             <div key={i} className="flex justify-between text-sm">
                               <span>@{(i + 1) * 5}</span>
                               <span>{(p * 100).toFixed(1)}%</span>
@@ -302,7 +426,7 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
                       <div>
                         <h4 className="font-medium mb-2">Recall@k</h4>
                         <div className="space-y-1">
-                          {metrics.recall_at_k.map((r, i) => (
+                          {metrics.recall_at_k?.map((r, i) => (
                             <div key={i} className="flex justify-between text-sm">
                               <span>@{(i + 1) * 5}</span>
                               <span>{(r * 100).toFixed(1)}%</span>
@@ -313,7 +437,7 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
                       <div>
                         <h4 className="font-medium mb-2">NDCG@k</h4>
                         <div className="space-y-1">
-                          {metrics.ndcg_at_k.map((n, i) => (
+                          {metrics.ndcg_at_k?.map((n, i) => (
                             <div key={i} className="flex justify-between text-sm">
                               <span>@{(i + 1) * 5}</span>
                               <span>{(n * 100).toFixed(1)}%</span>
@@ -325,11 +449,11 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
                     <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                       <div>
                         <span className="text-muted-foreground">Spearman rho</span>
-                        <p className="text-2xl font-bold">{metrics.spearman_rho.toFixed(3)}</p>
+                        <p className="text-2xl font-bold">{metrics.spearman_rho?.toFixed(3) ?? 'N/A'}</p>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Kendall tau</span>
-                        <p className="text-2xl font-bold">{metrics.kendall_tau.toFixed(3)}</p>
+                        <p className="text-2xl font-bold">{metrics.kendall_tau?.toFixed(3) ?? 'N/A'}</p>
                       </div>
                     </div>
                   </div>

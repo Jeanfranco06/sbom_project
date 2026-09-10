@@ -11,7 +11,7 @@ from __future__ import annotations
 import re
 from typing import Iterable
 
-from .cvss import parse_cvss_score
+from .cvss import parse_cvss_score, parse_cvss_vector
 from .snapshot_manager import SnapshotManager
 from .vulnerability_correlator import VulnerabilityCorrelator
 
@@ -65,15 +65,16 @@ class EnrichmentService:
             self._epss = self.snapshots.load_epss()
         return self._epss
 
-    def enrich(self, vuln: dict) -> dict:
+    def enrich(self, vuln: dict, mode: str | None = None) -> dict:
         """Devuelve un candidato de hallazgo enriquecido."""
         cves = _cve_aliases(vuln)
         primary = cves[0] if cves else vuln.get("id", "")
 
         # Severidad CVSS: primero desde OSV, luego desde NVD
         cvss_score, cvss_severity = parse_cvss_score(vuln.get("severity", []) or [])
+        cvss_vector = parse_cvss_vector(vuln.get("severity", []) or [])
         if cvss_score is None and primary.startswith("CVE-"):
-            cvss_score, cvss_severity = self.correlator.nvd_cvss_for(primary)
+            cvss_score, cvss_severity = self.correlator.nvd_cvss_for(primary, mode=mode)
         if cvss_severity:
             cvss_severity = cvss_severity.lower()
 
@@ -90,6 +91,7 @@ class EnrichmentService:
             "details": (vuln.get("details") or "").strip()[:2000] or None,
             "cvss_score": cvss_score,
             "cvss_severity": cvss_severity,
+            "cvss_vector": cvss_vector,
             "epss_score": max((epss.get(c, 0.0) for c in cves), default=None),
             "is_kev": any(c in kev for c in cves),
             "patch_available": bool(fixed),

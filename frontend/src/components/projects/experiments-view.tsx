@@ -39,7 +39,8 @@ export function ExperimentsView() {
   const loadTriageScenario = async (condition: 'A' | 'D') => {
     try {
       const data = await api.getTriageScenario(1, condition); // projectId 1 for demo
-      setTriageFindings(data.findings);
+      const findingsList = data?.findings || (data as unknown as { cards?: Finding[] })?.cards || [];
+      setTriageFindings(findingsList);
       setCurrentCondition(condition);
       setTimer(0);
       setIsTimerRunning(true);
@@ -75,7 +76,29 @@ export function ExperimentsView() {
   const loadSummary = async () => {
     try {
       const summary = await api.getTrialsSummary();
-      setTrialsSummary(summary);
+      if (summary) {
+        const raw = summary as unknown as {
+          condition_a?: { avg_time: number; accuracy: number; count: number };
+          condition_d?: { avg_time: number; accuracy: number; count: number };
+          conditions?: {
+            A?: { triage_seconds?: { mean?: number }; median?: number; decision_correct_rate?: number; n_trials?: number };
+            D?: { triage_seconds?: { mean?: number }; median?: number; decision_correct_rate?: number; n_trials?: number };
+          };
+        };
+        const condA = raw.condition_a || (raw.conditions?.A ? {
+          avg_time: raw.conditions.A.triage_seconds?.mean ?? raw.conditions.A.median ?? 0,
+          accuracy: raw.conditions.A.decision_correct_rate ?? 0,
+          count: raw.conditions.A.n_trials ?? 0,
+        } : { avg_time: 0, accuracy: 0, count: 0 });
+
+        const condD = raw.condition_d || (raw.conditions?.D ? {
+          avg_time: raw.conditions.D.triage_seconds?.mean ?? raw.conditions.D.median ?? 0,
+          accuracy: raw.conditions.D.decision_correct_rate ?? 0,
+          count: raw.conditions.D.n_trials ?? 0,
+        } : { avg_time: 0, accuracy: 0, count: 0 });
+
+        setTrialsSummary({ condition_a: condA, condition_d: condD });
+      }
     } catch (error) {
       console.error('Failed to load summary:', error);
     }
@@ -176,8 +199,11 @@ export function ExperimentsView() {
               Escenario Condición {currentCondition}
             </h3>
             <div className="grid gap-4">
-              {triageFindings.map((finding) => (
-                <FindingCard key={finding.id} finding={finding} />
+              {triageFindings.map((finding, idx) => (
+                <FindingCard
+                  key={finding.id ? `triage-finding-${finding.id}` : `triage-finding-${finding.vuln_id || (finding as unknown as { cve_id?: string }).cve_id || idx}-${idx}`}
+                  finding={finding}
+                />
               ))}
             </div>
           </div>
@@ -200,18 +226,18 @@ export function ExperimentsView() {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Tiempo promedio:</span>
                       <span className="font-mono">
-                        {formatTime(Math.round(trialsSummary.condition_a.avg_time))}
+                        {formatTime(Math.round(trialsSummary.condition_a?.avg_time || 0))}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Precisión:</span>
                       <span className="font-mono">
-                        {(trialsSummary.condition_a.accuracy * 100).toFixed(1)}%
+                        {((trialsSummary.condition_a?.accuracy || 0) * 100).toFixed(1)}%
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Participantes:</span>
-                      <span className="font-mono">{trialsSummary.condition_a.count}</span>
+                      <span className="font-mono">{trialsSummary.condition_a?.count || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -222,18 +248,18 @@ export function ExperimentsView() {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Tiempo promedio:</span>
                       <span className="font-mono">
-                        {formatTime(Math.round(trialsSummary.condition_d.avg_time))}
+                        {formatTime(Math.round(trialsSummary.condition_d?.avg_time || 0))}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Precisión:</span>
                       <span className="font-mono">
-                        {(trialsSummary.condition_d.accuracy * 100).toFixed(1)}%
+                        {((trialsSummary.condition_d?.accuracy || 0) * 100).toFixed(1)}%
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Participantes:</span>
-                      <span className="font-mono">{trialsSummary.condition_d.count}</span>
+                      <span className="font-mono">{trialsSummary.condition_d?.count || 0}</span>
                     </div>
                   </div>
                 </div>

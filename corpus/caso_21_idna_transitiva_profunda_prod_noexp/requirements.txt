@@ -1,6 +1,6 @@
 # Caso 21: Dependencia TRANSITIVA profunda (depth=4), produccion, NO expuesto, con parche
 # Objetivo: idna 3.6 (transitiva via corpus-http-client -> requests -> urllib3 -> idna)
-# CVE-2024-3651 (GHSA-pjwv-9gwv-v869, CVSS 7.5, parche 3.7)
+# CVE-2024-3651 (GHSA-jjg7-2v4v-x38h, CVSS 7.5, parche 3.7)
 corpus-http-client==1.0.0
 # Casos negativos (sin vulnerabilidades conocidas en el snapshot)
 six==1.16.0

@@ -15,14 +15,14 @@
         "CGA-7wrr-m3pv-pq78"
       ],
       "database_specific": {
+        "github_reviewed": true,
+        "nvd_published_at": "2023-12-18T16:15:10Z",
+        "severity": "MODERATE",
         "cwe_ids": [
           "CWE-345",
           "CWE-354"
         ],
-        "github_reviewed_at": "2023-12-18T19:22:09Z",
-        "github_reviewed": true,
-        "nvd_published_at": "2023-12-18T16:15:10Z",
-        "severity": "MODERATE"
+        "github_reviewed_at": "2023-12-18T19:22:09Z"
       },
       "references": [
         {
@@ -758,13 +758,13 @@
         "CGA-h6w8-w4hm-rr8p"
       ],
       "database_specific": {
-        "nvd_published_at": "2026-05-06T00:16:04Z",
         "severity": "LOW",
         "cwe_ids": [
           "CWE-327"
         ],
         "github_reviewed_at": "2026-05-08T23:13:43Z",
-        "github_reviewed": true
+        "github_reviewed": true,
+        "nvd_published_at": "2026-05-06T00:16:04Z"
       },
       "references": [
         {

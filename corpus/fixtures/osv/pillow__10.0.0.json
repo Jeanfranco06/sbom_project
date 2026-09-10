@@ -215,15 +215,15 @@
         "CGA-93xh-fprr-ggwg"
       ],
       "database_specific": {
+        "nvd_published_at": "2024-04-03T03:15:09Z",
+        "severity": "HIGH",
         "cwe_ids": [
           "CWE-120",
           "CWE-676",
           "CWE-680"
         ],
         "github_reviewed_at": "2024-04-03T14:53:39Z",
-        "github_reviewed": true,
-        "nvd_published_at": "2024-04-03T03:15:09Z",
-        "severity": "HIGH"
+        "github_reviewed": true
       },
       "references": [
         {
@@ -789,13 +789,13 @@
         "CGA-p8cg-6p3f-x6gv"
       ],
       "database_specific": {
-        "severity": "HIGH",
-        "github_reviewed": true,
         "github_reviewed_at": "2026-07-20T21:08:40Z",
         "nvd_published_at": "2026-07-06T19:17:08Z",
         "cwe_ids": [
           "CWE-789"
-        ]
+        ],
+        "severity": "HIGH",
+        "github_reviewed": true
       },
       "references": [
         {
@@ -979,13 +979,13 @@
         "CGA-j489-cxm6-q8p5"
       ],
       "database_specific": {
+        "severity": "HIGH",
+        "github_reviewed": true,
         "github_reviewed_at": "2026-07-20T21:08:13Z",
         "nvd_published_at": "2026-07-14T17:17:03Z",
         "cwe_ids": [
           "CWE-125"
-        ],
-        "severity": "HIGH",
-        "github_reviewed": true
+        ]
       },
       "references": [
         {
@@ -1169,14 +1169,14 @@
         "CGA-ww8f-85m7-jh8q"
       ],
       "database_specific": {
-        "nvd_published_at": "2026-07-14T16:17:01Z",
         "cwe_ids": [
           "CWE-190",
           "CWE-787"
         ],
         "severity": "HIGH",
         "github_reviewed": true,
-        "github_reviewed_at": "2026-07-20T23:09:53Z"
+        "github_reviewed_at": "2026-07-20T23:09:53Z",
+        "nvd_published_at": "2026-07-14T16:17:01Z"
       },
       "references": [
         {
@@ -1364,13 +1364,13 @@
         "CGA-wg8m-3j4m-6r2m"
       ],
       "database_specific": {
+        "nvd_published_at": "2026-07-06T19:17:08Z",
         "cwe_ids": [
           "CWE-789"
         ],
         "severity": "HIGH",
         "github_reviewed": true,
-        "github_reviewed_at": "2026-07-20T21:08:27Z",
-        "nvd_published_at": "2026-07-06T19:17:08Z"
+        "github_reviewed_at": "2026-07-20T21:08:27Z"
       },
       "references": [
         {
@@ -1554,13 +1554,13 @@
         "CGA-3764-q237-9fc3"
       ],
       "database_specific": {
+        "github_reviewed": true,
+        "github_reviewed_at": "2026-07-20T23:19:00Z",
         "nvd_published_at": "2026-07-14T16:17:02Z",
         "cwe_ids": [
           "CWE-787"
         ],
-        "severity": "HIGH",
-        "github_reviewed": true,
-        "github_reviewed_at": "2026-07-20T23:19:00Z"
+        "severity": "HIGH"
       },
       "references": [
         {
@@ -1748,13 +1748,13 @@
         "CGA-hwgg-pxhc-xv74"
       ],
       "database_specific": {
+        "github_reviewed": true,
+        "github_reviewed_at": "2026-07-20T23:09:36Z",
+        "nvd_published_at": "2026-07-14T16:17:01Z",
         "cwe_ids": [
           "CWE-125"
         ],
-        "severity": "MODERATE",
-        "github_reviewed": true,
-        "github_reviewed_at": "2026-07-20T23:09:36Z",
-        "nvd_published_at": "2026-07-14T16:17:01Z"
+        "severity": "MODERATE"
       },
       "references": [
         {
@@ -1883,13 +1883,13 @@
         "CGA-75hp-cxgv-82q3"
       ],
       "database_specific": {
-        "github_reviewed": true,
         "nvd_published_at": "2023-09-12T15:15:24Z",
         "severity": "HIGH",
         "cwe_ids": [
           "CWE-787"
         ],
-        "github_reviewed_at": "2023-09-14T16:20:50Z"
+        "github_reviewed_at": "2023-09-14T16:20:50Z",
+        "github_reviewed": true
       },
       "references": [
         {
@@ -4080,13 +4080,13 @@
         "CGA-9w22-5cq6-3php"
       ],
       "database_specific": {
-        "cwe_ids": [
-          "CWE-835"
-        ],
         "github_reviewed_at": "2026-05-04T20:19:30Z",
         "github_reviewed": true,
         "nvd_published_at": "2026-05-09T06:16:10Z",
-        "severity": "MODERATE"
+        "severity": "MODERATE",
+        "cwe_ids": [
+          "CWE-835"
+        ]
       },
       "references": [
         {
@@ -4219,14 +4219,14 @@
         "CGA-g77f-x6w5-h9xw"
       ],
       "database_specific": {
-        "severity": "HIGH",
-        "github_reviewed": true,
-        "github_reviewed_at": "2026-07-20T23:18:32Z",
-        "nvd_published_at": "2026-07-14T16:17:02Z",
         "cwe_ids": [
           "CWE-770",
           "CWE-789"
-        ]
+        ],
+        "severity": "HIGH",
+        "github_reviewed": true,
+        "github_reviewed_at": "2026-07-20T23:18:32Z",
+        "nvd_published_at": "2026-07-14T16:17:02Z"
       },
       "references": [
         {
@@ -4331,13 +4331,13 @@
         "CGA-9v75-xm6q-wrrf"
       ],
       "database_specific": {
-        "nvd_published_at": "2026-05-09T06:16:09Z",
         "cwe_ids": [
           "CWE-190"
         ],
         "severity": "MODERATE",
         "github_reviewed": true,
-        "github_reviewed_at": "2026-05-04T20:18:45Z"
+        "github_reviewed_at": "2026-05-04T20:18:45Z",
+        "nvd_published_at": "2026-05-09T06:16:09Z"
       },
       "references": [
         {
@@ -4520,13 +4520,13 @@
         "CGA-cmrx-7947-88wx"
       ],
       "database_specific": {
+        "github_reviewed": true,
+        "github_reviewed_at": "2026-07-20T23:08:58Z",
         "nvd_published_at": "2026-07-14T17:17:14Z",
         "cwe_ids": [
           "CWE-190"
         ],
-        "severity": "HIGH",
-        "github_reviewed": true,
-        "github_reviewed_at": "2026-07-20T23:08:58Z"
+        "severity": "HIGH"
       },
       "references": [
         {

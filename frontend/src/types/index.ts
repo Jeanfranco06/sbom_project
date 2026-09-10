@@ -62,6 +62,18 @@ export interface Analysis {
   created_at: string;
 }
 
+export interface AnalysisSummary {
+  project: Project;
+  analysis: Analysis | null;
+  dependency_count: number;
+  direct_count: number;
+  transitive_count: number;
+  finding_count: number;
+  kev_finding_count?: number;
+  patch_available_count?: number;
+  by_priority: Record<string, number>;
+}
+
 export interface GroundTruth {
   id: number;
   project_id: number;
@@ -127,6 +139,7 @@ export interface ExperimentRun {
 }
 
 export interface SnapshotStatus {
+  mode: string;
   kev: {
     available: boolean;
     last_updated: string | null;
@@ -137,6 +150,12 @@ export interface SnapshotStatus {
     last_updated: string | null;
     count: number;
   };
+}
+
+export interface SettingsOut {
+  mode: string;
+  weights: Weights;
+  thresholds: Record<string, number>;
 }
 
 export interface GraphData {
@@ -156,16 +175,47 @@ export interface GraphData {
 
 export type PriorityLabel = 'critical' | 'high' | 'medium' | 'low' | 'info';
 
+export interface ExplanationFactor {
+  factor: string;
+  label: string;
+  source: string;
+  value_normalized: number;
+  internal_value: unknown;
+  weight_pct: number;
+  contribution_pct: number;
+  note: string;
+}
+
+export interface ExplanationEvidence {
+  source: string;
+  value?: unknown;
+  severity?: string;
+  fixed_versions?: string[];
+  details?: string;
+}
+
+export interface RiskImpact {
+  cia: {
+    confidentiality: string;
+    integrity: string;
+    availability: string;
+  };
+  business_impacts: string[];
+  exposure_context: string[];
+  exploitation: string[];
+  risk_level: string;
+  impact_summary: string;
+}
+
 export interface Explanation {
-  factors: Array<{
-    name: string;
-    label: string;
-    source: string;
-    value: number;
-    contribution: number;
-    description: string;
-  }>;
+  component: { name: string; version: string };
+  vulnerability: string;
+  aliases: string[];
+  priority: { score: number; label: string };
+  profile: { environment: string; internet_exposed: boolean; data_criticality: string };
+  factors: ExplanationFactor[];
   rules_applied: string[];
-  recommendation: string;
-  evidence: Record<string, unknown>;
+  remediation: string;
+  risk_impact: RiskImpact;
+  evidence: ExplanationEvidence[];
 }

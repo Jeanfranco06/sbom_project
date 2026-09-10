@@ -9,3 +9,4 @@ networkx>=3.0
 reportlab>=4.1.0
 cyclonedx-python-lib>=7.0.0
 pytest>=8.0.0
+tomli>=2.0.1

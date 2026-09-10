@@ -1,0 +1,31 @@
+[[package]]
+name = "corpus-nlp-pipeline"
+version = "1.0.0"
+category = "main"
+optional = false
+dependencies = { corpus-text-analyzer = "*", platformdirs = "*", zipp = "*" }
+
+[[package]]
+name = "corpus-text-analyzer"
+version = "1.0.0"
+category = "main"
+optional = false
+dependencies = { nltk = "*" }
+
+[[package]]
+name = "nltk"
+version = "3.8.1"
+category = "main"
+optional = false
+
+[[package]]
+name = "platformdirs"
+version = "4.2.2"
+category = "main"
+optional = false
+
+[[package]]
+name = "zipp"
+version = "3.19.2"
+category = "main"
+optional = false

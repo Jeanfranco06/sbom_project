@@ -93,6 +93,71 @@ def parse_cvss_score(severity_entries: list[dict]) -> tuple[float | None, str | 
     return None, None
 
 
+def parse_cvss_vector(severity_entries: list[dict]) -> dict | None:
+    """Extrae componentes del vector CVSS (CIA impact, attack vector, etc.)."""
+    for entry in severity_entries or []:
+        score = entry.get("score") or ""
+        etype = (entry.get("type") or "").upper()
+        if "CVSS_V3" in etype or "CVSS3" in score:
+            return _parse_cvss3_vector(score)
+        elif "CVSS_V2" in etype:
+            return _parse_cvss2_vector(score)
+    return None
+
+
+def _parse_cvss3_vector(vector: str) -> dict | None:
+    if not vector:
+        return None
+    parts = {}
+    for piece in vector.replace("CVSS:3.0", "").replace("CVSS:3.1", "").split("/"):
+        piece = piece.strip().lstrip("/")
+        if not piece or ":" not in piece:
+            continue
+        k, v = piece.split(":", 1)
+        parts[k.strip()] = v.strip()
+
+    impact_labels = {"H": "alto", "L": "bajo", "N": "ninguno"}
+    av_labels = {"N": "red", "A": "local", "L": "local", "P": "fisico"}
+    pr_labels = {"N": "ninguna", "L": "baja", "H": "alta"}
+    ui_labels = {"N": "ninguna", "R": "reԛuerida"}
+
+    return {
+        "vector": vector,
+        "confidentiality": impact_labels.get(parts.get("C", "N"), "desconocido"),
+        "integrity": impact_labels.get(parts.get("I", "N"), "desconocido"),
+        "availability": impact_labels.get(parts.get("A", "N"), "desconocido"),
+        "attack_vector": av_labels.get(parts.get("AV", "N"), "desconocido"),
+        "attack_complexity": "baja" if parts.get("AC") == "L" else "alta",
+        "privileges_required": pr_labels.get(parts.get("PR", "N"), "desconocido"),
+        "user_interaction": ui_labels.get(parts.get("UI", "N"), "desconocido"),
+        "scope": "cambiado" if parts.get("S") == "C" else "sin cambio",
+    }
+
+
+def _parse_cvss2_vector(vector: str) -> dict | None:
+    if not vector:
+        return None
+    impact_labels = {"C": "completo", "P": "parcial", "N": "ninguno"}
+    av_labels = {"N": "red", "A": "local", "L": "local"}
+
+    c_match = re.search(r"C:([NPC])", vector)
+    i_match = re.search(r"I:([NPC])", vector)
+    a_match = re.search(r"A:([NPC])", vector)
+    av_match = re.search(r"AV:([NAL])", vector)
+
+    return {
+        "vector": vector,
+        "confidentiality": impact_labels.get(c_match.group(1) if c_match else "N", "desconocido"),
+        "integrity": impact_labels.get(i_match.group(1) if i_match else "N", "desconocido"),
+        "availability": impact_labels.get(a_match.group(1) if a_match else "N", "desconocido"),
+        "attack_vector": av_labels.get(av_match.group(1) if av_match else "N", "desconocido"),
+        "attack_complexity": "baja",
+        "privileges_required": "desconocido",
+        "user_interaction": "desconocido",
+        "scope": "sin cambio",
+    }
+
+
 def _severity_label(score: float) -> str:
     if score >= 9.0:
         return "CRITICAL"

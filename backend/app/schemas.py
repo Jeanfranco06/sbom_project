@@ -169,7 +169,7 @@ class SnapshotDownloadResult(BaseModel):
 
 class AnalysisSummary(BaseModel):
     project: ProjectOut
-    analysis: AnalysisOut
+    analysis: AnalysisOut | None = None
     dependency_count: int
     direct_count: int
     transitive_count: int

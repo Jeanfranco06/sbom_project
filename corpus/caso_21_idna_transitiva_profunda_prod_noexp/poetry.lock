@@ -1,0 +1,38 @@
+[[package]]
+name = "corpus-http-client"
+version = "1.0.0"
+category = "main"
+optional = false
+dependencies = { requests = "*", six = "*", packaging = "*" }
+
+[[package]]
+name = "requests"
+version = "2.31.0"
+category = "main"
+optional = false
+dependencies = { urllib3 = "*" }
+
+[[package]]
+name = "urllib3"
+version = "2.0.4"
+category = "main"
+optional = false
+dependencies = { idna = "*" }
+
+[[package]]
+name = "idna"
+version = "3.6"
+category = "main"
+optional = false
+
+[[package]]
+name = "six"
+version = "1.16.0"
+category = "main"
+optional = false
+
+[[package]]
+name = "packaging"
+version = "24.1"
+category = "main"
+optional = false
