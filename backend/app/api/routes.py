@@ -344,9 +344,10 @@ def export_report(
 def dependency_graph(project_id: int, db: DbDep):
     _get_project_or_404(db, project_id)
     deps = db.query(Dependency).filter_by(project_id=project_id).options(
-        selectinload(Dependency.edges_from)
+        selectinload(Dependency.edges_from),
+        selectinload(Dependency.findings)
     ).all()
-    nodes = [{"id": d.id, "name": d.name, "version": d.version, "is_direct": d.is_direct, "depth": d.depth} for d in deps]
+    nodes = [{"id": d.id, "name": d.name, "version": d.version, "is_direct": d.is_direct, "depth": d.depth, "is_vulnerable": len(d.findings) > 0} for d in deps]
     edges = []
     for d in deps:
         for edge in d.edges_from:
