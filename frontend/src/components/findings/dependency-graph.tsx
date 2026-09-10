@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import type { GraphData } from '@/types';
+import { Maximize, Minimize, ZoomIn, ZoomOut, Move } from 'lucide-react';
 
 interface DependencyGraphProps {
   data: GraphData;
@@ -24,12 +25,52 @@ export function DependencyGraph({ data, className }: DependencyGraphProps) {
   const svgRef = React.useRef<SVGSVGElement>(null);
   const [selectedNode, setSelectedNode] = React.useState<string | null>(null);
   const [hoveredNode, setHoveredNode] = React.useState<string | null>(null);
-  const [dimensions] = React.useState({ width: 800, height: 600 });
+  
+  // UX Controls states
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [zoom, setZoom] = React.useState(1);
+  const [pan, setPan] = React.useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [dragStart, setDragStart] = React.useState({ x: 0, y: 0 });
+
+  // Native SVG Mouse Handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+  };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+  };
+  const handleMouseUp = () => setIsDragging(false);
+
+  // Calculate dynamic dimensions to prevent squishing
+  const { virtualWidth, virtualHeight } = React.useMemo(() => {
+    const safeNodes = data?.nodes || [];
+    const depths = new Map<number, number>();
+    let maxDepth = 0;
+    
+    safeNodes.forEach(n => {
+      const d = n.depth || 0;
+      depths.set(d, (depths.get(d) || 0) + 1);
+      if (d > maxDepth) maxDepth = d;
+    });
+    
+    let maxNodesInLevel = 0;
+    depths.forEach(count => {
+      if (count > maxNodesInLevel) maxNodesInLevel = count;
+    });
+
+    return {
+      virtualWidth: Math.max(800, maxNodesInLevel * 120), // 120px per node horizontally
+      virtualHeight: Math.max(600, (maxDepth + 1) * 150) // 150px per depth level vertically
+    };
+  }, [data?.nodes]);
 
   const nodes = React.useMemo(() => {
     const nodeMap = new Map<string, Node>();
-    const width = dimensions.width;
-    const height = dimensions.height;
+    const width = virtualWidth;
+    const height = virtualHeight;
     const padding = 60;
 
     const safeNodes = data?.nodes || [];
@@ -68,7 +109,7 @@ export function DependencyGraph({ data, className }: DependencyGraphProps) {
     });
 
     return nodeMap;
-  }, [data?.nodes, dimensions]);
+  }, [data?.nodes, virtualWidth, virtualHeight]);
 
   const edges = React.useMemo(() => {
     const safeEdges = data?.edges || [];
@@ -105,15 +146,24 @@ export function DependencyGraph({ data, className }: DependencyGraphProps) {
   const selectedNodeData = selectedNode ? nodes.get(selectedNode) : null;
 
   return (
-    <div className={cn('relative', className)}>
+    <div className={cn('relative bg-background overflow-hidden', isFullscreen ? 'fixed inset-0 z-50 w-full h-full' : 'w-full h-[600px] border rounded-lg', className)}>
       <svg
         ref={svgRef}
-        width={dimensions.width}
-        height={dimensions.height}
-        className="border rounded-lg bg-background"
+        width="100%"
+        height="100%"
+        className={cn(isDragging ? 'cursor-grabbing' : 'cursor-grab', 'touch-none')}
+        onWheel={(e) => {
+          const factor = e.deltaY < 0 ? 1.1 : 0.9;
+          setZoom(z => Math.max(0.1, Math.min(z * factor, 5)));
+        }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
       >
-        {/* Edges */}
-        <g className="edges">
+        <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
+          {/* Edges */}
+          <g className="edges">
           {edges.map((edge, i) => {
             const source = edge.source!;
             const target = edge.target!;
@@ -207,7 +257,25 @@ export function DependencyGraph({ data, className }: DependencyGraphProps) {
             );
           })}
         </g>
+        </g>
       </svg>
+
+      {/* Toolbar controls */}
+      <div className="absolute bottom-4 right-4 flex flex-col gap-2 bg-card border rounded-lg p-2 shadow-lg">
+        <button onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="p-1.5 hover:bg-accent rounded" title="Acercar">
+          <ZoomIn className="w-4 h-4" />
+        </button>
+        <button onClick={() => setZoom(z => Math.max(z * 0.8, 0.1))} className="p-1.5 hover:bg-accent rounded" title="Alejar">
+          <ZoomOut className="w-4 h-4" />
+        </button>
+        <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} className="p-1.5 hover:bg-accent rounded" title="Centrar">
+          <Move className="w-4 h-4" />
+        </button>
+        <div className="w-full h-px bg-border my-1" />
+        <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-1.5 hover:bg-accent rounded" title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}>
+          {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+        </button>
+      </div>
 
       {/* Tooltip */}
       {hoveredNode && !selectedNode && (() => {
