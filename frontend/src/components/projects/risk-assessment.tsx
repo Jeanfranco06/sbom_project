@@ -222,8 +222,8 @@ export function RiskAssessmentPanel({ projectId }: RiskAssessmentPanelProps) {
                     <p className="text-sm text-muted-foreground mb-2">{action.description}</p>
                     <div className="flex items-center gap-4 text-xs">
                       <span className="text-muted-foreground">
-                        Paquetes: {action.affected_packages.slice(0, 3).join(', ')}
-                        {action.affected_packages.length > 3 && ` +${action.affected_packages.length - 3}`}
+                        Paquetes: {action.affected_packages ? action.affected_packages.slice(0, 3).join(', ') : 'Desconocido'}
+                        {action.affected_packages && action.affected_packages.length > 3 && ` +${action.affected_packages.length - 3}`}
                       </span>
                       <span className="text-green-500">
                         Reducción estimada: {action.risk_reduction}%

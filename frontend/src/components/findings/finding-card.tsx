@@ -204,7 +204,7 @@ export function FindingCard({ finding, className }: FindingCardProps) {
                 </div>
 
                 {/* Business impacts */}
-                {data.risk_impact.business_impacts.length > 0 && (
+                {data.risk_impact.business_impacts && data.risk_impact.business_impacts.length > 0 && (
                   <div className="space-y-1 mb-2">
                     {data.risk_impact.business_impacts.map((impact, i) => (
                       <div key={i} className="flex items-start gap-2 text-xs">
@@ -216,7 +216,7 @@ export function FindingCard({ finding, className }: FindingCardProps) {
                 )}
 
                 {/* Exploitation */}
-                {data.risk_impact.exploitation.length > 0 && (
+                {data.risk_impact.exploitation && data.risk_impact.exploitation.length > 0 && (
                   <div className="space-y-1 mb-2">
                     {data.risk_impact.exploitation.map((exp, i) => (
                       <div key={i} className="flex items-start gap-2 text-xs text-orange-400">
@@ -228,7 +228,7 @@ export function FindingCard({ finding, className }: FindingCardProps) {
                 )}
 
                 {/* Exposure context */}
-                {data.risk_impact.exposure_context.map((ctx, i) => (
+                {data.risk_impact.exposure_context && data.risk_impact.exposure_context.map((ctx, i) => (
                   <p key={i} className="text-xs text-muted-foreground mt-2 italic">{ctx}</p>
                 ))}
 

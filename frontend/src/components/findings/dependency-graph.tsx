@@ -32,9 +32,11 @@ export function DependencyGraph({ data, className }: DependencyGraphProps) {
     const height = dimensions.height;
     const padding = 60;
 
+    const safeNodes = data?.nodes || [];
+
     // Group nodes by depth
     const depthGroups = new Map<number, string[]>();
-    data.nodes.forEach((node) => {
+    safeNodes.forEach((node) => {
       const depth = node.depth || 0;
       if (!depthGroups.has(depth)) {
         depthGroups.set(depth, []);
@@ -49,7 +51,7 @@ export function DependencyGraph({ data, className }: DependencyGraphProps) {
     depthGroups.forEach((nodeIds, depth) => {
       const levelWidth = (width - padding * 2) / Math.max(nodeIds.length, 1);
       nodeIds.forEach((id, index) => {
-        const nodeData = data.nodes.find((n) => n.id === id);
+        const nodeData = safeNodes.find((n) => n.id === id);
         if (nodeData) {
           nodeMap.set(id, {
             id,
@@ -66,14 +68,15 @@ export function DependencyGraph({ data, className }: DependencyGraphProps) {
     });
 
     return nodeMap;
-  }, [data.nodes, dimensions]);
+  }, [data?.nodes, dimensions]);
 
   const edges = React.useMemo(() => {
-    return data.edges.map((edge) => ({
+    const safeEdges = data?.edges || [];
+    return safeEdges.map((edge) => ({
       source: nodes.get(edge.source),
       target: nodes.get(edge.target),
     })).filter((e) => e.source && e.target);
-  }, [data.edges, nodes]);
+  }, [data?.edges, nodes]);
 
   const getNodeColor = (node: Node) => {
     if (node.is_vulnerable) return '#ef4444'; // red

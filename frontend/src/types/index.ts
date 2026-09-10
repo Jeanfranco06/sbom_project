@@ -90,15 +90,30 @@ export interface GroundTruth {
 }
 
 export interface Metrics {
-  precision_at_k: number[];
-  recall_at_k: number[];
-  ndcg_at_k: number[];
-  kendall_tau: number;
-  spearman_rho: number;
-  baseline_metrics: {
-    precision_at_k: number[];
-    recall_at_k: number[];
-    ndcg_at_k: number[];
+  k: number;
+  n_findings: number;
+  n_ground_truth: number;
+  n_relevant: number;
+  baseline_cvss: {
+    ranking: string[];
+    precision_at_k: number;
+    recall_at_k: number;
+    ndcg_at_k: number;
+  };
+  contextual: {
+    ranking: string[];
+    precision_at_k: number;
+    recall_at_k: number;
+    ndcg_at_k: number;
+  };
+  concordance: {
+    kendall_tau: number;
+    spearman_rho: number;
+    expert_ranking: string[];
+    contextual_vs_expert_tau: number;
+    baseline_vs_expert_tau: number;
+    contextual_vs_expert_spearman: number;
+    baseline_vs_expert_spearman: number;
   };
 }
 

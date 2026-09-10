@@ -409,51 +409,36 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
                 <CardTitle>Métricas de Ranking</CardTitle>
               </CardHeader>
               <CardContent>
-                {metrics ? (
+                {metrics && metrics.contextual && metrics.concordance ? (
                   <div className="space-y-4">
                     <div className="grid grid-cols-3 gap-4">
                       <div>
                         <h4 className="font-medium mb-2">Precision@k</h4>
-                        <div className="space-y-1">
-                          {metrics.precision_at_k?.map((p, i) => (
-                            <div key={i} className="flex justify-between text-sm">
-                              <span>@{(i + 1) * 5}</span>
-                              <span>{(p * 100).toFixed(1)}%</span>
-                            </div>
-                          ))}
+                        <div className="text-2xl font-bold">
+                          {(metrics.contextual.precision_at_k * 100).toFixed(1)}%
                         </div>
                       </div>
                       <div>
                         <h4 className="font-medium mb-2">Recall@k</h4>
-                        <div className="space-y-1">
-                          {metrics.recall_at_k?.map((r, i) => (
-                            <div key={i} className="flex justify-between text-sm">
-                              <span>@{(i + 1) * 5}</span>
-                              <span>{(r * 100).toFixed(1)}%</span>
-                            </div>
-                          ))}
+                        <div className="text-2xl font-bold">
+                          {(metrics.contextual.recall_at_k * 100).toFixed(1)}%
                         </div>
                       </div>
                       <div>
                         <h4 className="font-medium mb-2">NDCG@k</h4>
-                        <div className="space-y-1">
-                          {metrics.ndcg_at_k?.map((n, i) => (
-                            <div key={i} className="flex justify-between text-sm">
-                              <span>@{(i + 1) * 5}</span>
-                              <span>{(n * 100).toFixed(1)}%</span>
-                            </div>
-                          ))}
+                        <div className="text-2xl font-bold">
+                          {(metrics.contextual.ndcg_at_k * 100).toFixed(1)}%
                         </div>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                       <div>
                         <span className="text-muted-foreground">Spearman rho</span>
-                        <p className="text-2xl font-bold">{metrics.spearman_rho?.toFixed(3) ?? 'N/A'}</p>
+                        <p className="text-2xl font-bold">{metrics.concordance.spearman_rho?.toFixed(3) ?? 'N/A'}</p>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Kendall tau</span>
-                        <p className="text-2xl font-bold">{metrics.kendall_tau?.toFixed(3) ?? 'N/A'}</p>
+                        <p className="text-2xl font-bold">{metrics.concordance.kendall_tau?.toFixed(3) ?? 'N/A'}</p>
                       </div>
                     </div>
                   </div>
