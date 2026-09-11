@@ -46,6 +46,7 @@ P_v = 20*C + 25*K + 15*E + 15*X + 10*A + 5*D + 5*I + 5*R
 - **Experimentación**: Módulo de usabilidad con cronómetro para validar H2 (reducción de tiempo de triage)
 - **Exportación**: JSON, CSV, PDF con formatos profesionales
 - **Dashboard**: KPIs, distribución de prioridades, timeline de análisis
+- **Repositorios GitHub**: Clonado shallow, rama/tag opcional y commit analizado trazable
 
 ---
 
@@ -128,6 +129,8 @@ docker compose up -d postgres
 cd backend
 pip install -r requirements.txt
 $env:DATABASE_URL = "postgresql+psycopg://secsbom:secsbom@localhost:5432/secsbom"
+# Opcional: token para repositorios privados de GitHub
+# $env:GITHUB_TOKEN = "ghp_..."
 uvicorn app.main:app --reload --port 8000
 
 # Terminal 3: Frontend (Next.js)

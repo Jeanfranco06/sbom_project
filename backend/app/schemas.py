@@ -15,6 +15,7 @@ class ProjectCreate(BaseModel):
     path: str | None = None
     source_type: str = "local"
     git_url: str | None = None
+    git_ref: str | None = None
     description: str | None = None
     environment: str = "production"
     internet_exposed: bool = True
@@ -28,6 +29,7 @@ class ProjectUpdate(BaseModel):
     environment: str | None = None
     internet_exposed: bool | None = None
     data_criticality: str | None = None
+    git_ref: str | None = None
 
 
 class ProjectOut(BaseModel):
@@ -38,6 +40,7 @@ class ProjectOut(BaseModel):
     path: str
     source_type: str
     git_url: str | None
+    git_ref: str | None
     description: str | None
     environment: str
     internet_exposed: bool
@@ -90,6 +93,7 @@ class AnalysisOut(BaseModel):
     status: str
     error: str | None
     manifest_sha256: str | None = None
+    source_commit: str | None = None
     snapshot_metadata: str = "{}"
     created_at: datetime
 

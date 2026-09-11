@@ -25,6 +25,7 @@ services:
       SECSBOM_MODE: hybrid
       SECSBOM_BASE_DIR: /app
       DATABASE_URL: postgresql+psycopg://secsbom:secsbom@postgres:5432/secsbom
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
     depends_on:
       postgres:
         condition: service_healthy

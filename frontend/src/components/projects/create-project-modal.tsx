@@ -18,6 +18,7 @@ const projectSchema = z.object({
   source_type: z.enum(['local', 'git', 'upload']),
   path: z.string().optional(),
   git_url: z.string().url('URL inválida').optional().or(z.literal('')),
+  git_ref: z.string().optional(),
   environment: z.enum(['production', 'staging', 'development']),
   data_criticality: z.enum(['high', 'medium', 'low']),
   internet_exposed: z.boolean(),
@@ -64,6 +65,7 @@ export function CreateProjectModal({ open, onClose, onCreated }: CreateProjectMo
         source_type: data.source_type,
         path: data.source_type === 'local' ? data.path || undefined : undefined,
         git_url: data.source_type === 'git' ? data.git_url || undefined : undefined,
+        git_ref: data.source_type === 'git' ? data.git_ref || undefined : undefined,
         environment: data.environment,
         data_criticality: data.data_criticality,
         internet_exposed: data.internet_exposed,
@@ -149,16 +151,26 @@ export function CreateProjectModal({ open, onClose, onCreated }: CreateProjectMo
         )}
 
         {sourceType === 'git' && (
-          <div className="space-y-2">
-            <Label htmlFor="git_url">URL de Git (HTTPS)</Label>
-            <Input
-              id="git_url"
-              placeholder="https://github.com/usuario/repo.git"
-              {...register('git_url')}
-            />
-            {errors.git_url && (
-              <p className="text-sm text-destructive">{errors.git_url.message}</p>
-            )}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="git_url">URL de Git (HTTPS)</Label>
+              <Input
+                id="git_url"
+                placeholder="https://github.com/usuario/repo.git"
+                {...register('git_url')}
+              />
+              {errors.git_url && (
+                <p className="text-sm text-destructive">{errors.git_url.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="git_ref">Rama o tag (opcional)</Label>
+              <Input
+                id="git_ref"
+                placeholder="main"
+                {...register('git_ref')}
+              />
+            </div>
           </div>
         )}
 

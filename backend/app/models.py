@@ -43,6 +43,7 @@ class Project(Base):
     # Perfil de origen del codigo
     source_type: Mapped[str] = mapped_column(String(32), default="local")  # local|git|upload
     git_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    git_ref: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Perfil de contexto definido por el usuario
     environment: Mapped[str] = mapped_column(String(32), default="production")  # production|staging|development
@@ -67,6 +68,7 @@ class Analysis(Base):
     status: Mapped[str] = mapped_column(String(32), default="pending")  # pending|running|done|error
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
     manifest_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    source_commit: Mapped[str | None] = mapped_column(String(40), nullable=True)
     snapshot_metadata: Mapped[str] = mapped_column(Text, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 

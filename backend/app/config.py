@@ -16,9 +16,9 @@ BASE_DIR = Path(os.environ.get("SECSBOM_BASE_DIR", str(Path(__file__).resolve().
 class Settings:
     # Directorio raiz de datos (snapshots, base de datos, cache OSV)
     data_dir: Path = BASE_DIR / "data"
-    # SQLite por defecto para evitar errores de PostgreSQL (psycopg) en Windows sin Docker.
+    # PostgreSQL es la base de datos de ejecucion. Las pruebas pueden inyectar SQLite.
     database_url: str = os.environ.get(
-        "DATABASE_URL", "sqlite:///./secsbom.db"
+        "DATABASE_URL", "postgresql+psycopg://secsbom:secsbom@localhost:5432/secsbom"
     )
     # Modo de operacion: connected | hybrid | offline
     mode: str = os.environ.get("SECSBOM_MODE", "connected")

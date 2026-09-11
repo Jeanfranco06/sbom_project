@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from .api.routes import router
@@ -98,7 +98,18 @@ else:
     else:
         @app.get("/", include_in_schema=False)
         def index_fallback():
-            return FileResponse(STATIC_DIR / "index.html")
+            return JSONResponse(
+                {
+                    "message": "Backend activo, pero no hay un build del frontend disponible.",
+                    "development": f"Ejecuta el frontend con Next.js en http://localhost:{NEXTJS_PORT}",
+                }
+            )
 
-        app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-        logger.warning("Build de Next.js no encontrado en %s, usando frontend legacy", FRONTEND_BUILD_DIR)
+        if STATIC_DIR.exists():
+            app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+            logger.warning("Build de Next.js no encontrado en %s, usando frontend legacy", FRONTEND_BUILD_DIR)
+        else:
+            logger.warning(
+                "No hay build de frontend ni directorio legacy en %s; se servira solo la API",
+                FRONTEND_BUILD_DIR,
+            )

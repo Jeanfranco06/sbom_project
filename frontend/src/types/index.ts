@@ -5,6 +5,7 @@ export interface Project {
   description: string | null;
   source_type: 'local' | 'git' | 'upload';
   git_url: string | null;
+  git_ref: string | null;
   environment: 'production' | 'staging' | 'development';
   internet_exposed: boolean;
   data_criticality: 'high' | 'medium' | 'low';

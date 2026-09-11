@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import json
+import os
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
@@ -17,6 +19,7 @@ from .explainability import build_explanation
 from .prioritization import PrioritizationEngine
 from .snapshot_manager import SnapshotManager
 from .vulnerability_correlator import VulnerabilityCorrelator
+from .git_repository import GitRepositoryError, clone_repository
 
 
 def make_purl(name: str, version: str, ecosystem: str = "PyPI") -> str:
@@ -49,14 +52,37 @@ class AnalysisService:
             self.db.delete(dep)
         self.db.flush()
 
-    def analyze(self, project_id: int, mode: str | None = None) -> Analysis:
-        analysis = Analysis(
-            project_id=project_id,
-            mode=mode or settings.mode,
-            status="running",
-        )
-        self.db.add(analysis)
-        self.db.commit()
+    def _correlate_dependency(
+        self, dep: Dependency, mode: str
+    ) -> tuple[Dependency, list[dict]]:
+        if not dep.version or dep.version == "0.0":
+            return dep, []
+
+        vulns = self.correlator.correlate(dep.name, dep.version, dep.ecosystem, mode=mode)
+        best: dict[str, dict] = {}
+        for raw in vulns:
+            candidate = self.enrichment.enrich(raw, mode=mode)
+            if not candidate.get("vuln_id"):
+                continue
+            key = candidate["cves"][0] if candidate.get("cves") else candidate["vuln_id"]
+            existing = best.get(key)
+            best[key] = candidate if existing is None else _merge_candidates(existing, candidate)
+        return dep, list(best.values())
+
+    def analyze(
+        self,
+        project_id: int,
+        mode: str | None = None,
+        analysis: Analysis | None = None,
+    ) -> Analysis:
+        if analysis is None:
+            analysis = Analysis(
+                project_id=project_id,
+                mode=mode or settings.mode,
+                status="running",
+            )
+            self.db.add(analysis)
+            self.db.commit()
 
         try:
             project = self.db.get(Project, project_id)
@@ -64,19 +90,18 @@ class AnalysisService:
                 raise ValueError("Proyecto no encontrado")
 
             if project.source_type == "git" and project.git_url:
-                import subprocess
-                import shutil
-                repo_path = Path(project.path)
-                if repo_path.exists():
-                    shutil.rmtree(repo_path)
-                repo_path.parent.mkdir(parents=True, exist_ok=True)
+                repo_path = settings.data_dir / "repos" / str(project.id)
+                project.path = str(repo_path)
                 try:
-                    subprocess.run(
-                        ["git", "clone", "--depth", "1", project.git_url, str(repo_path)],
-                        check=True, capture_output=True, text=True
+                    checkout_path, analysis.source_commit = clone_repository(
+                        project.git_url,
+                        repo_path,
+                        project.git_ref,
+                        os.environ.get("GITHUB_TOKEN"),
                     )
-                except subprocess.CalledProcessError as exc:
-                    raise DependencyAnalysisError(f"Error al clonar el repositorio Git: {exc.stderr}")
+                    project.path = str(checkout_path)
+                except GitRepositoryError as exc:
+                    raise DependencyAnalysisError(str(exc)) from exc
 
             analysis.manifest_sha256 = _hash_manifest(project.path)
             
@@ -113,25 +138,18 @@ class AnalysisService:
                     self.db.add(DependencyEdge(project_id=project.id, source_id=s.id, target_id=t.id))
             self.db.flush()
 
-            # Correlacion OSV + enriquecimiento + priorizacion + explicabilidad
-            for dep in dep_map.values():
-                if not dep.version or dep.version == "0.0":
-                    continue
-                vulns = self.correlator.correlate(dep.name, dep.version, dep.ecosystem, mode=analysis.mode)
-                best: dict[str, tuple[Dependency, dict]] = {}
-                for raw in vulns:
-                    candidate = self.enrichment.enrich(raw, mode=analysis.mode)
-                    if not candidate.get("vuln_id"):
-                        continue
-                    key = candidate["cves"][0] if candidate.get("cves") else candidate["vuln_id"]
-                    existing = best.get(key)
-                    if existing is None:
-                        best[key] = (dep, candidate)
-                        continue
-                    best[key] = (dep, _merge_candidates(existing[1], candidate))
-                for dep_c, cand in best.values():
-                    finding = self._build_finding(project, dep_c, cand)
-                    self.db.add(finding)
+            # OSV/NVD son operaciones de red; se paralelizan y la persistencia queda secuencial.
+            dependencies = list(dep_map.values())
+            workers = min(8, max(1, len(dependencies)))
+            with ThreadPoolExecutor(max_workers=workers) as executor:
+                correlated = executor.map(
+                    lambda dep: self._correlate_dependency(dep, analysis.mode),
+                    dependencies,
+                )
+                for dep_c, candidates in correlated:
+                    for cand in candidates:
+                        finding = self._build_finding(project, dep_c, cand)
+                        self.db.add(finding)
             self.db.commit()
 
             project.last_analysis_at = datetime.now(timezone.utc)

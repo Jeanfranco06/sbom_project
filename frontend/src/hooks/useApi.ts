@@ -56,7 +56,11 @@ export function useProject(id: number | null) {
     fetchProject();
   }, [id]);
 
-  return { project, loading, error };
+  const replaceProject = (updatedProject: Project) => {
+    setProject(updatedProject);
+  };
+
+  return { project, loading, error, replaceProject };
 }
 
 export function useFindings(
@@ -103,41 +107,41 @@ export function useAnalysis(projectId: number | null) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchAnalysis = useCallback(async () => {
     if (!projectId) {
       setLoading(false);
       return;
     }
 
-    const fetchAnalysis = async () => {
-      try {
-        setLoading(true);
-        const data = await api.getAnalysis(projectId);
-        if (data && typeof data === 'object' && 'analysis' in data) {
-          setSummary(data);
-          setAnalysis(data.analysis);
-        } else {
-          setAnalysis(data as unknown as Analysis);
-        }
-        setError(null);
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        if (message.includes('404')) {
-          setAnalysis(null);
-          setSummary(null);
-          setError(null);
-        } else {
-          setError(message || 'Error fetching analysis');
-        }
-      } finally {
-        setLoading(false);
+    try {
+      setLoading(true);
+      const data = await api.getAnalysis(projectId);
+      if (data && typeof data === 'object' && 'analysis' in data) {
+        setSummary(data);
+        setAnalysis(data.analysis);
+      } else {
+        setAnalysis(data as unknown as Analysis);
       }
-    };
-
-    fetchAnalysis();
+      setError(null);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes('404')) {
+        setAnalysis(null);
+        setSummary(null);
+        setError(null);
+      } else {
+        setError(message || 'Error fetching analysis');
+      }
+    } finally {
+      setLoading(false);
+    }
   }, [projectId]);
 
-  const analyze = async (mode: string = 'offline') => {
+  useEffect(() => {
+    fetchAnalysis();
+  }, [fetchAnalysis]);
+
+  const analyze = async (mode: string = 'hybrid') => {
     if (!projectId) return;
     try {
       setLoading(true);
@@ -154,7 +158,7 @@ export function useAnalysis(projectId: number | null) {
     }
   };
 
-  return { analysis, summary, loading, error, analyze };
+  return { analysis, summary, loading, error, analyze, refetch: fetchAnalysis };
 }
 
 export function useGraph(projectId: number | null) {
@@ -187,13 +191,13 @@ export function useGraph(projectId: number | null) {
   return { graph, loading, error, refetch: fetchGraph };
 }
 
-export function useMetrics(projectId: number | null, k: number = 10) {
+export function useMetrics(projectId: number | null, k: number = 10, enabled = true) {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchMetrics = useCallback(async () => {
-    if (!projectId) {
+    if (!projectId || !enabled) {
       setLoading(false);
       return;
     }
@@ -208,7 +212,7 @@ export function useMetrics(projectId: number | null, k: number = 10) {
     } finally {
       setLoading(false);
     }
-  }, [projectId, k]);
+  }, [projectId, k, enabled]);
 
   useEffect(() => {
     fetchMetrics();

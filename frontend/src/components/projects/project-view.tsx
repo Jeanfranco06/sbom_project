@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FindingCard } from '@/components/findings/finding-card';
 import { DependencyGraph } from '@/components/findings/dependency-graph';
 import { RiskAssessmentPanel } from '@/components/projects/risk-assessment';
+import { ProjectContextEditor } from '@/components/projects/project-context-editor';
+import { GroundTruthEditor } from '@/components/projects/ground-truth-editor';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import {
   useProject,
@@ -37,15 +39,13 @@ interface ProjectViewProps {
 }
 
 export function ProjectView({ projectId, onBack }: ProjectViewProps) {
-  const { project, loading: projectLoading } = useProject(projectId);
-  const { analysis, analyze, loading: analysisLoading } = useAnalysis(projectId);
+  const { project, loading: projectLoading, replaceProject } = useProject(projectId);
+  const { analysis, analyze, loading: analysisLoading, refetch: refetchAnalysis } = useAnalysis(projectId);
   const { findings, loading: findingsLoading, refetch: refetchFindings } = useFindings(projectId);
   const { graph, refetch: refetchGraph } = useGraph(projectId);
-  const { metrics, refetch: refetchMetrics } = useMetrics(projectId);
 
   const [activeTab, setActiveTab] = React.useState('findings');
-  const [analysisMode, setAnalysisMode] = React.useState<string>('offline');
-  const [polling, setPolling] = React.useState(false);
+  const [analysisMode, setAnalysisMode] = React.useState<string>('hybrid');
   const [page, setPage] = React.useState(1);
   const [filters, setFilters] = React.useState({
     priority: '',
@@ -57,25 +57,26 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
   const PAGE_SIZE = 10;
 
   const isAnalyzing = analysis?.status === 'running' || analysisLoading;
+  const { metrics, error: metricsError, refetch: refetchMetrics } = useMetrics(
+    projectId,
+    10,
+    activeTab === 'metrics'
+  );
 
   React.useEffect(() => {
-    if (!isAnalyzing || !polling) return;
-    const interval = setInterval(async () => {
-      await refetchFindings();
-      await refetchGraph();
-      await refetchMetrics();
+    if (analysis?.status !== 'running') return;
+    const interval = setInterval(() => {
+      refetchAnalysis();
     }, 3000);
     return () => clearInterval(interval);
-  }, [isAnalyzing, polling, refetchFindings, refetchGraph, refetchMetrics]);
+  }, [analysis?.status, refetchAnalysis]);
 
   React.useEffect(() => {
     if (analysis?.status === 'done' || analysis?.status === 'error') {
-      setPolling(false);
       refetchFindings();
       refetchGraph();
-      refetchMetrics();
     }
-  }, [analysis?.status, refetchFindings, refetchGraph, refetchMetrics]);
+  }, [analysis?.status, refetchFindings, refetchGraph]);
 
   const filteredFindings = React.useMemo(() => {
     return findings.filter((f) => {
@@ -114,9 +115,7 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
   }, [filters]);
 
   const handleAnalyze = async () => {
-    setPolling(true);
     await analyze(analysisMode);
-    setPolling(false);
   };
 
   const handleExport = async (format: 'json' | 'csv' | 'pdf') => {
@@ -168,7 +167,7 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
           disabled={isAnalyzing}
           className="px-3 py-1.5 rounded-md border bg-background text-sm"
         >
-          <option value="offline">Offline</option>
+          <option value="offline">Offline (solo caché)</option>
           <option value="connected">Connected</option>
           <option value="hybrid">Hibrido</option>
         </select>
@@ -200,6 +199,13 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
       </Header>
 
       <div className="flex-1 overflow-auto p-4 space-y-6">
+        <ProjectContextEditor
+          project={project}
+          onSaved={(updatedProject) => {
+            replaceProject(updatedProject);
+          }}
+        />
+
         {/* Stats */}
         <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
           <StatsCard
@@ -248,6 +254,7 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
             <TabsTrigger value="risk">Evaluacion de Riesgo</TabsTrigger>
             <TabsTrigger value="graph">Grafo de Dependencias</TabsTrigger>
             <TabsTrigger value="metrics">Metricas de Ranking</TabsTrigger>
+            <TabsTrigger value="ground-truth">Ground Truth</TabsTrigger>
             <TabsTrigger value="sbom">SBOM</TabsTrigger>
           </TabsList>
 
@@ -442,13 +449,24 @@ export function ProjectView({ projectId, onBack }: ProjectViewProps) {
                       </div>
                     </div>
                   </div>
+                ) : metricsError?.includes('409') ? (
+                  <p className="text-muted-foreground text-center py-8">
+                    Configura al menos una etiqueta en la pestaña Ground Truth para ver las métricas.
+                  </p>
                 ) : (
                   <p className="text-muted-foreground text-center py-8">
-                    Ejecuta un análisis y configura ground truth para ver las métricas.
+                    Ejecuta un análisis para ver las métricas de ranking.
                   </p>
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="ground-truth">
+            <GroundTruthEditor
+              projectId={projectId}
+              onSaved={() => refetchMetrics()}
+            />
           </TabsContent>
 
           <TabsContent value="sbom">

@@ -1,5 +1,6 @@
 """Pruebas de integracion de la API (modo offline, sin red)."""
 import json
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -38,7 +39,7 @@ def test_projects_lifecycle(sample_project):
 
     r = client.post(f"/api/projects/{project_id}/analyze")
     assert r.status_code == 200
-    assert r.json()["status"] in ("done", "error")
+    assert r.json()["status"] in ("running", "done", "error")
 
     r = client.get(f"/api/projects/{project_id}/analysis")
     assert r.status_code == 200
@@ -70,6 +71,24 @@ def test_projects_lifecycle(sample_project):
 
     r = client.delete(f"/api/projects/{project_id}")
     assert r.status_code == 204
+
+
+def test_create_git_project_persists_repository_metadata():
+    r = client.post(
+        "/api/projects",
+        json={
+            "name": "github-project",
+            "source_type": "git",
+            "git_url": "https://github.com/acme/project.git",
+            "git_ref": "main",
+        },
+    )
+    assert r.status_code == 201
+    data = r.json()
+    assert data["source_type"] == "git"
+    assert data["git_url"] == "https://github.com/acme/project.git"
+    assert data["git_ref"] == "main"
+    assert Path(data["path"]).name == str(data["id"])
 
 
 def test_weights_validation():

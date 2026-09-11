@@ -68,7 +68,7 @@ export const api = {
     fetchApi<void>(`/projects/${id}`, { method: 'DELETE' }),
 
   // Analysis
-  analyzeProject: (id: number, mode: string = 'offline') =>
+  analyzeProject: (id: number, mode: string = 'hybrid') =>
     fetchApi<Analysis>(`/projects/${id}/analyze?mode=${mode}`, {
       method: 'POST',
     }),
@@ -109,7 +109,7 @@ export const api = {
   getGroundTruth: (id: number) =>
     fetchApi<GroundTruth[]>(`/projects/${id}/ground-truth`),
   setGroundTruth: (id: number, data: Partial<GroundTruth>[]) =>
-    fetchApi<GroundTruth[]>(`/projects/${id}/ground-truth`, {
+    fetchApi<{ count: number }>(`/projects/${id}/ground-truth`, {
       method: 'PUT',
       body: JSON.stringify(data),
     }),

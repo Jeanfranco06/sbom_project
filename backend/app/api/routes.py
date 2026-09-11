@@ -4,13 +4,13 @@ from __future__ import annotations
 import json
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFile, File, Form
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, UploadFile, File, Form
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session, selectinload
 import shutil
 
 from ..config import settings
-from ..database import get_db
+from ..database import SessionLocal, get_db
 from ..models import Analysis, Dependency, DependencyEdge, ExperimentRun, Finding, GroundTruth, Project, Setting, UsabilityTrial
 from ..schemas import (
     AnalysisOut,
@@ -37,6 +37,7 @@ from ..services.sbom_generator import generate_cyclonedx_json
 from ..services.snapshot_manager import SnapshotManager
 from ..services.statistics import aggregate_experiment, compare_metrics_pairs, wilcoxon_signed_rank, cohen_d
 from ..services.usability import build_triage_scenario, experience_summary
+from ..services.git_repository import GitRepositoryError, validate_git_url
 
 router = APIRouter(prefix="/api")
 DbDep = Annotated[Session, Depends(get_db)]
@@ -68,6 +69,12 @@ def create_project(payload: ProjectCreate, db: DbDep):
             dump["git_url"] = payload.path
         else:
             raise HTTPException(status_code=422, detail="Se requiere una URL de Git. Verifica haber pegado el enlace en el campo visible tras seleccionar 'Repositorio Git'.")
+    if payload.source_type == "git":
+        try:
+            payload.git_url = validate_git_url(payload.git_url or "")
+            dump["git_url"] = payload.git_url
+        except GitRepositoryError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
     if payload.source_type == "local" and not payload.path:
         raise HTTPException(status_code=422, detail="Se requiere una ruta local")
         
@@ -182,16 +189,41 @@ def delete_project(project_id: int, db: DbDep):
 
 
 # ---------------- Analisis ----------------
+def _run_analysis_background(analysis_id: int, project_id: int, mode: str | None) -> None:
+    db = SessionLocal()
+    try:
+        analysis = db.get(Analysis, analysis_id)
+        if analysis is None:
+            return
+        AnalysisService(db).analyze(project_id, mode, analysis=analysis)
+    finally:
+        db.close()
+
+
 @router.post("/projects/{project_id}/analyze", response_model=AnalysisOut)
-def analyze_project(project_id: int, db: DbDep, mode: Optional[str] = Query(default=None)):
+def analyze_project(
+    project_id: int,
+    db: DbDep,
+    background_tasks: BackgroundTasks,
+    mode: Optional[str] = Query(default=None),
+):
     _get_project_or_404(db, project_id)
     if mode not in (None, "connected", "hybrid", "offline"):
         raise HTTPException(status_code=422, detail="modo invalido")
-    service = AnalysisService(db)
-    try:
-        analysis = service.analyze(project_id, mode)
-    except DependencyAnalysisError as exc:
-        raise HTTPException(status_code=422, detail=str(exc))
+    active = (
+        db.query(Analysis)
+        .filter(Analysis.project_id == project_id, Analysis.status == "running")
+        .order_by(Analysis.id.desc())
+        .first()
+    )
+    if active is not None:
+        return active
+
+    analysis = Analysis(project_id=project_id, mode=mode or settings.mode, status="running")
+    db.add(analysis)
+    db.commit()
+    db.refresh(analysis)
+    background_tasks.add_task(_run_analysis_background, analysis.id, project_id, mode)
     return analysis
 
 
@@ -384,6 +416,12 @@ def upsert_ground_truth(project_id: int, payload: list[GroundTruthItem], db: DbD
     for item in payload:
         if item.expected_priority not in ("critical", "high", "medium", "low", "info"):
             raise HTTPException(status_code=422, detail=f"Prioridad invalida: {item.expected_priority}")
+    vuln_ids = {item.vuln_id for item in payload}
+    existing_rows = db.query(GroundTruth).filter_by(project_id=project_id).all()
+    for row in existing_rows:
+        if row.vuln_id not in vuln_ids:
+            db.delete(row)
+    for item in payload:
         row = db.query(GroundTruth).filter_by(project_id=project_id, vuln_id=item.vuln_id).first()
         if row is None:
             row = GroundTruth(project_id=project_id, **item.model_dump())
